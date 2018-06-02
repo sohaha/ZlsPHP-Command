@@ -42,7 +42,7 @@ class Mysql extends Command
 
     public function execute($args)
     {
-        $method = z::arrayGet($args, ['type', 3]);
+        $method = z::arrayGet($args, ['type', 2]);
         if (method_exists($this, $method)) {
             $this->$method($args);
         } else {

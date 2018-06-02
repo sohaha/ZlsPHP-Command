@@ -65,14 +65,4 @@ class Start extends Command
             echo $e->getMessage() . PHP_EOL;
         }
     }
-
-    public function a()
-    {
-        for ($i = 0; $i <= 100; $i++) {
-           $this->mprogress($i,'Importing: ','','','');
-            usleep(1000 * 10);
-        }
-        echo "\n", "Done.\n";
-
-    }
 }
