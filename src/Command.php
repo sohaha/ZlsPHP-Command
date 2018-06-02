@@ -71,7 +71,7 @@ abstract class Command
     final public function getHandle()
     {
         $keys = array_diff(get_class_methods($this), get_class_methods(__CLASS__));
-        return array_fill_keys($keys,'--');
+        return array_fill_keys($keys, '--');
     }
 
     /**
