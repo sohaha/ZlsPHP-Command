@@ -16,7 +16,7 @@ use Z;
 class Mysql extends Command
 {
     private $dir = '../database';
-    private $prefix = 'CommandExport_';
+    private $prefix = 'Command_';
 
     public function description()
     {
@@ -59,12 +59,12 @@ class Mysql extends Command
         });
         $dbExist = true;
         /**
-         * @var \Zls\Command\Other\MysqlEI $MysqlEI
+         * @var \Zls\Command\Mysql\MysqlEI $MysqlEI
          */
         $MysqlEI = null;
         try {
             try {
-                $MysqlEI = z::extension('Command\Other\MysqlEI');
+                $MysqlEI = z::extension('Command\Mysql\MysqlEI');
             } catch (\Exception $exc) {
                 $errMsg = $exc->getMessage();
                 z::throwIf(!preg_match('/Database Group(.*)Unknown database(.*)/', $errMsg), 'Database', $errMsg);
@@ -84,7 +84,7 @@ class Mysql extends Command
                 } catch (\Exception $exc) {
                     z::throwIf(true, 'Database', $sql . ' Error, Please manually create the database');
                 }
-                $MysqlEI = z::extension('Command\Other\MysqlEI');
+                $MysqlEI = z::extension('Command\Mysql\MysqlEI');
             }
             if ($dbExist && $backup) {
                 $allTable = $MysqlEI->allTable();
@@ -114,10 +114,7 @@ class Mysql extends Command
                     }
                 }
             }
-            $res = $MysqlEI->import(z::realPath($this->dir . '/' . $filePath), $tablePrefix);
-            foreach ($res as $v) {
-                echo $v . PHP_EOL;
-            }
+            $MysqlEI->import(z::realPath($this->dir . '/' . $filePath), $tablePrefix);
         } catch (\Exception $exc) {
             echo $exc->getMessage() . PHP_EOL;
         }
@@ -146,9 +143,9 @@ class Mysql extends Command
         }
         try {
             /**
-             * @var \Zls\Command\Other\MysqlEI $MysqlEI
+             * @var \Zls\Command\Mysql\MysqlEI $MysqlEI
              */
-            $MysqlEI = Z::extension('Command\Other\MysqlEI');
+            $MysqlEI = Z::extension('Command\Mysql\MysqlEI');
             echo $this->echoN('Start backup, please wait', 'light_blue');
             $MysqlEI->export($table, $dir, $this->prefix, $ignoreData, $filename, $size);
         } catch (\Exception $exc) {

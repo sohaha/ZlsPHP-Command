@@ -18,13 +18,16 @@ abstract class Command
     {
         $command = Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
         $options = static::options($args);
-        $handles = static::handle($args);//$this->getHandle();
+        $handles = static::handle($args);
+        if ($handles === true) {
+            $handles = $this->getHandle();
+        }
         $commandStr = z::arrayGet($args, 0) . ' ' . $this->color($command);
         $usage = '';
         $usage .= $handles ? $this->color(':{handle}', 'cyan') : '';
         $usage .= $options ? $this->color(' [options ...]', 'blue') : '';
         $example = static::example($args);
-        $this->echoN(static::description($args));
+        $this->echoN(static::description($args), 'light_green');
         $this->echoN();
         $this->echoN('Usage:', 'yellow');
         $this->echoN('  ' . $commandStr . $usage);
@@ -65,6 +68,12 @@ abstract class Command
     {
     }
 
+    final public function getHandle()
+    {
+        $keys = array_diff(get_class_methods($this), get_class_methods(__CLASS__));
+        return array_fill_keys($keys,'--');
+    }
+
     /**
      * 命令示例
      * @return array
@@ -102,9 +111,4 @@ abstract class Command
      * @return mixed
      */
     abstract public function execute($args);
-
-    final public function getHandle()
-    {
-        return array_diff(get_class_methods($this), get_class_methods(__CLASS__));
-    }
 }

@@ -42,12 +42,13 @@ class Main extends Command
             $this->getColor();
             z::finish();
         }
-        $this->echoN('ZlsPHP command lists', 'white', 'green');
+        $commandRun = z::arrayGet($args, 0);
+        $this->echoN('ZlsPHP command lists', 'light_green');
         $this->echoN();
         $this->echoN('Usage:', 'yellow');
         $this->echoN(
             '  ' .
-            z::arrayGet($args, 0) .
+            $commandRun .
             ' ' . $this->color('{command}', 'green') .
             ' ' . $this->color('[arg1 value1 args2=value2 ...] [Options]', 'dark_gray')
         );
@@ -73,6 +74,8 @@ class Main extends Command
             $this->echoN('Extend Command:', 'yellow');
             $this->getInfo(array_diff($extendCommand, $this->command));
         }
+        $this->echoN();
+        $this->echoN('More command information, please use: '.$commandRun.' '.$this->color('{command}', 'green').' -h');
     }
 
     private function getColor()

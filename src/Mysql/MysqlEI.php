@@ -1,6 +1,6 @@
 <?php
 
-namespace Zls\Command\Other;
+namespace Zls\Command\Mysql;
 
 use Z;
 use Zls\Command\Utils;
@@ -52,12 +52,11 @@ class MysqlEI
                 $dir .= '/';
             }
         }
-        $msg = [];
         $sql = '';
         $db = $this->db;
         $sql .= $this->retrieve();
         $p = 1;
-        $thanSize = function (&$_sql, &$p, $filename) use ($size, $dir, &$msg) {
+        $thanSize = function (&$_sql, &$p, $filename) use ($size, $dir) {
             if (strlen($_sql) >= $size * 1024) {
                 $file = $filename . "_v" . $p . ".sql";
                 $res = $this->writeFile($_sql, $file, $dir);
@@ -88,7 +87,8 @@ class MysqlEI
         if ($name) {
             $filename = $name;
         }
-        foreach ($tables as $table) {
+        $count = count($tables);
+        foreach ($tables as $i => $table) {
             $tablename = $table['Name'];
             $isIgnore = z::arrayGet($ignoreData, str_replace($tablePrefix, '', $tablename), null);
             if (is_null($isIgnore) && is_array($ignoreData)) {
@@ -132,7 +132,7 @@ class MysqlEI
             }
         }
 
-        return ($dir) ? $msg : $sql;
+        return ($dir) ? true : $sql;
     }
 
     /**
@@ -248,14 +248,13 @@ class MysqlEI
      * 参数：文件路径(必填)
      * @param string     $sqlfile
      * @param array|null $tablePrefix
-     * @return array
+     * @return void
      */
     public function import($sqlfile, $tablePrefix = null)
     {
         z::throwIf(!file_exists($sqlfile), 500, 'Database backup does not exist! Please check');
         $sqlpath = pathinfo($sqlfile);
         $this->sqldir = $sqlpath ['dirname'];
-        $msg = [];
         $volume = explode("_v", $sqlfile);
         $volume_path = $volume [0];
         $this->echoN("Import backup data");
@@ -269,7 +268,8 @@ class MysqlEI
             while ($volume_id) {
                 $tmpfile = $volume_path . "_v" . $volume_id . ".sql";
                 if (file_exists($tmpfile)) {
-                    $this->echoN("Importing sub-volumes{$volume_id}: {$tmpfile}");
+                    $basename = pathinfo($tmpfile, PATHINFO_BASENAME);
+                    $this->echoN("Import volumes-{$volume_id}: {$basename}");
                     z::throwIf(!$this->_import($tmpfile, $tablePrefix), 'Exception', "Import volumes{$volume_id}：" . $tmpfile . ' error! It may be that the database structure is damaged! , Please try to import from volume 1');
                 } else {
                     $this->echoN();
@@ -279,8 +279,6 @@ class MysqlEI
                 $volume_id++;
             }
         }
-
-        return $msg;
     }
 
     /**
@@ -319,10 +317,7 @@ class MysqlEI
                 $sql = str_replace("CREATE TABLE `{$tablePrefix[0]}", "CREATE TABLE `{$tablePrefix[1]}", $sql);
                 $sql = str_replace("DROP TABLE IF EXISTS `{$tablePrefix[0]}", "DROP TABLE IF EXISTS `{$tablePrefix[1]}", $sql);
             }
-            //$r = $i > 0 ? $count / $i : 0;
-            //if ($r===intval($r)) {
-            //    $this->echoN($r);
-            //}
+            $this->progress(($i / $count) * 100, 'Importing: ', '', '', '');
             if (!$this->db->execute(trim($sql))) {
                 return false;
             }

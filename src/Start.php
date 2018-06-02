@@ -15,6 +15,37 @@ use Z;
  */
 class Start extends Command
 {
+    public function description()
+    {
+        return 'Quick Start web server';
+    }
+
+    public function options()
+    {
+        return [
+            '-host, -H' => 'Listening IP',
+            '-port, -P' => 'Listening Port',
+        ];
+    }
+
+    public function handle()
+    {
+        return true;
+    }
+
+    public function example()
+    {
+        return [
+            ' -host 0.0.0.0' => 'To make the network access',
+        ];
+    }
+
+    public function port()
+    {
+        $port = $this->ask('端口: ', null, '请输入端口: ');
+        $this->execute(['port' => $port]);
+    }
+
     public function execute($args)
     {
         $port = z::arrayGet($args, ['port', 'P', 3], 3780);
@@ -35,23 +66,13 @@ class Start extends Command
         }
     }
 
-    public function description()
+    public function a()
     {
-        return 'Quick Start web server';
-    }
+        for ($i = 0; $i <= 100; $i++) {
+           $this->mprogress($i,'Importing: ','','','');
+            usleep(1000 * 10);
+        }
+        echo "\n", "Done.\n";
 
-    public function options()
-    {
-        return [
-            '-host, -H' => 'Listening IP',
-            '-port, -P' => 'Listening Port',
-        ];
-    }
-
-    public function example()
-    {
-        return [
-            ' -host 0.0.0.0' => 'To make the network access',
-        ];
     }
 }

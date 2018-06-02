@@ -91,7 +91,7 @@ trait Utils
         do {
             fwrite(STDOUT, $question);
             $value = trim(fgets(STDIN));
-            if ($value || $canNull) {
+            if ($value || !$canNull) {
                 $status = true;
             } elseif (is_string($canNull)) {
                 $question = $canNull;
@@ -99,5 +99,12 @@ trait Utils
         } while (!$status);
 
         return $value;
+    }
+
+    final public function progress($i, $title = 'mprogress: ', $mprogressColor = '', $bgColor = '', $pad = ' ')
+    {
+        $bgColor = $bgColor ? "\033[" . z::arrayGet($this->bgColors, $bgColor, 'white') . "m" : '';
+        $mprogressColor = $mprogressColor ? "\033[" . z::arrayGet($this->colors, $mprogressColor, 'white') . "m" : '';
+        printf("{$title}{$bgColor}{$mprogressColor} %d%% %s\r\033[0m", $i, str_repeat($pad, $i));
     }
 }
