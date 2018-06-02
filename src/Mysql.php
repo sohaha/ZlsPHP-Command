@@ -15,7 +15,6 @@ use Z;
  */
 class Mysql extends Command
 {
-
     private $dir = '../database';
     private $prefix = 'CommandExport_';
 
@@ -24,11 +23,11 @@ class Mysql extends Command
         return 'Mysql Backup And Restore';
     }
 
-    public function example()
+    public function handle()
     {
         return [
-            ':import' => 'import backup file',
-            ':export' => 'export backup file',
+            'import' => 'Import backup file',
+            'export' => 'Export backup file',
         ];
     }
 
@@ -145,12 +144,12 @@ class Mysql extends Command
             }
             $ignoreData = $_ignoreData;
         }
-        /**
-         * @var \Zls\Command\Other\MysqlEI $MysqlEI
-         */
-        $MysqlEI = Z::extension('Command\Other\MysqlEI');
         try {
-            echo $this->strN('Start backup, please wait', 'light_blue');
+            /**
+             * @var \Zls\Command\Other\MysqlEI $MysqlEI
+             */
+            $MysqlEI = Z::extension('Command\Other\MysqlEI');
+            echo $this->echoN('Start backup, please wait', 'light_blue');
             $MysqlEI->export($table, $dir, $this->prefix, $ignoreData, $filename, $size);
         } catch (\Exception $exc) {
             echo $exc->getMessage() . PHP_EOL;

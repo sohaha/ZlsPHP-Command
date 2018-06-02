@@ -39,28 +39,28 @@ trait Utils
         'light_gray' => '47',
     ];
 
-    public final function getColors()
+    final public function getColors()
     {
         return $this->colors;
     }
 
-    public final function getBgColors()
+    final public function getBgColors()
     {
         return $this->bgColors;
     }
 
-    public final function error($err, $color = 'red')
+    final public function error($err, $color = 'red')
     {
-        $this->str('[ Error ]', 'white', 'red');
-        $this->strN(': ' . $err, $color);
+        $this->echo('[ Error ]', 'white', 'red');
+        $this->echoN(': ' . $err, $color);
     }
 
-    public final function str($str = '', $color = '', $bgColor = null)
+    final public function echo($str = '', $color = '', $bgColor = null)
     {
         echo $this->color($str, $color, $bgColor);
     }
 
-    public final function color($str = '', $color = null, $bgColor = null)
+    final public function color($str = '', $color = null, $bgColor = null)
     {
         $colorStr = "";
         if (isset($this->colors[$color])) {
@@ -74,18 +74,18 @@ trait Utils
         return $colorStr;
     }
 
-    public final function strN($str = '', $color = '', $bgColor = null)
+    final public function echoN($str = '', $color = '', $bgColor = null)
     {
         echo $this->color($str, $color, $bgColor);
         echo PHP_EOL;
     }
 
-    public final function success($msg, $color = 'green')
+    final public function success($msg, $color = 'green')
     {
-        $this->str('Success', 'white', 'green') . $this->strN(': ' . $msg, $color);
+        $this->echo('Success', 'white', 'green') . $this->echoN(': ' . $msg, $color);
     }
 
-    public final function ask($question, $default = null, $canNull = false)
+    final public function ask($question, $default = null, $canNull = false)
     {
         $status = false;
         do {
@@ -97,9 +97,7 @@ trait Utils
                 $question = $canNull;
             }
         } while (!$status);
-        //system('clear');
-        //z::command('clear');
+
         return $value;
     }
-
 }

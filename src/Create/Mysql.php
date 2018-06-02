@@ -14,7 +14,9 @@ use Zls\Command\Utils;
 class Mysql
 {
     use Utils;
-    private $type, $table, $dbGroup;
+    private $type;
+    private $table;
+    private $dbGroup;
 
     public function creation($type, $table, $dbGroup)
     {
@@ -152,13 +154,17 @@ class Mysql
             $column = str_replace(' ', '', ucwords(str_replace('_', ' ', $value['name'])));
             $column0 = $value['name'];
             /*$column1 = lcfirst($column);*/
-            $fields[] = str_replace(['{column0}', '{comment}'], [$column0, $value['comment']],
+            $fields[] = str_replace(
+                ['{column0}', '{comment}'],
+                [$column0, $value['comment']],
                 $fieldTemplate
             );
         }
         $code = "\n{fields}\n\n";
-        $code = str_replace(['{fields}'],
-            [implode("\n\n", $fields)], $code
+        $code = str_replace(
+            ['{fields}'],
+            [implode("\n\n", $fields)],
+            $code
         );
 
         return $code;

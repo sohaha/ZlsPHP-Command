@@ -32,7 +32,7 @@ class Common
             $classesDir = $config->getPrimaryApplicationDir() . $config->getHmvcDirName() . '/' . $HmvcModules . '/' . $config->getClassesDirName() . '/';
         }
         switch ($type) {
-            case 'controller' :
+            case 'controller':
                 $info = [
                     'dir'         => $config->getControllerDirName(),
                     'parentClass' => 'Zls_Controller',
@@ -40,7 +40,7 @@ class Common
                     'nameTip'     => 'Controller',
                 ];
                 break;
-            case 'business'   :
+            case 'business':
                 $info = [
                     'dir'         => $config->getBusinessDirName(),
                     'parentClass' => 'Zls_Business',
@@ -48,7 +48,7 @@ class Common
                     'nameTip'     => 'Business',
                 ];
                 break;
-            case 'model'      :
+            case 'model':
                 $info = [
                     'dir'         => $config->getModelDirName(),
                     'parentClass' => 'Zls_Model',
@@ -157,8 +157,8 @@ class Common
             }
             if ($content && file_put_contents($file, $content)) {
                 $this->success("{$tip} [ {$classname} ] created successfully.");
-                $this->strN("FilePath: {$file}");
-                $this->strN();
+                $this->echoN("FilePath: {$file}");
+                $this->echoN();
             }
         } catch (\ReflectionException $e) {
             echo $e->getMessage();
@@ -175,7 +175,7 @@ class Common
         $content = $this->$style($typename, $classname, $parentClass, $method);
         if (file_put_contents($file, $content)) {
             $this->success("{$tip} [ {$classname} ] created successfully");
-            $this->strN("FilePath: {$file}");
+            $this->echoN("FilePath: {$file}");
         }
     }
 

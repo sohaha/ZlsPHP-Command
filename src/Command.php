@@ -14,42 +14,39 @@ abstract class Command
 {
     use Utils;
 
-    public final function help($args)
+    final public function help($args)
     {
         $command = Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
         $options = static::options($args);
-        $handles = $this->getHandle();
-        $commandStr = z::arrayGet($args, 0) . ' ' . $this->color($command, 'green');
+        $handles = static::handle($args);//$this->getHandle();
+        $commandStr = z::arrayGet($args, 0) . ' ' . $this->color($command);
         $usage = '';
-        $usage .= $handles ? $this->color('{handle} ', 'cyan') : '';
-        $usage .= $options ? $this->color('[options ...] ', 'dark_gray') : '';
+        $usage .= $handles ? $this->color(':{handle}', 'cyan') : '';
+        $usage .= $options ? $this->color(' [options ...]', 'blue') : '';
         $example = static::example($args);
-        $this->strN(static::description($args));
-        $this->strN();
-        $this->strN('Usage:', 'yellow');
-        $this->strN('  ' . $commandStr . ' ' . $this->color($usage, 'dark_gray')
-        );
-        //if ($handles) {
-        //    $this->strN();
-        //    $this->strN('Handle:', 'yellow');
-        //    foreach ($handles as $k => $handle) {
-        //        $this->strN(
-        //            '  ' . z::arrayGet($args, 0) . ' ' . $command . ':' . $handle
-        //        );
-        //    }
-        //}
+        $this->echoN(static::description($args));
+        $this->echoN();
+        $this->echoN('Usage:', 'yellow');
+        $this->echoN('  ' . $commandStr . $usage);
+        if ($handles) {
+            $this->echoN();
+            $this->echoN('Handle:', 'yellow');
+            foreach ($this->beautify($handles) as $k => $v) {
+                $this->echoN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color(':' . $k, 'cyan') . '    ' . $v);
+            }
+        }
         if ($options) {
-            $this->strN();
-            $this->strN('Options:', 'yellow');
+            $this->echoN();
+            $this->echoN('Options:', 'yellow');
             foreach ($this->beautify($options) as $k => $v) {
-                $this->strN('  ' . $this->color($k, 'green') . '    ' . $v);
+                $this->echoN('  ' . $this->color($k, 'blue') . '    ' . $v);
             }
         }
         if ($example) {
-            $this->strN();
-            $this->strN('Example:', 'yellow');
+            $this->echoN();
+            $this->echoN('Example:', 'yellow');
             foreach ($this->beautify($example) as $k => $v) {
-                $this->strN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color($k, 'green') . '    ' . $v);
+                $this->echoN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color($k, 'cyan') . '    ' . $v);
             }
         }
     }
@@ -58,21 +55,31 @@ abstract class Command
      * 命令配置
      * @return array
      */
-    public abstract function options();
+    abstract public function options();
+
+    /**
+     * 子命令
+     * @return array
+     */
+    public function handle()
+    {
+    }
 
     /**
      * 命令示例
      * @return array
      */
-    public abstract function example();
+    public function example()
+    {
+    }
 
     /**
      * 命令介绍
      * @return string
      */
-    public abstract function description();
+    abstract public function description();
 
-    public final function beautify($commands)
+    final public function beautify($commands)
     {
         $lists = [];
         $maxLen = 10;
@@ -96,9 +103,8 @@ abstract class Command
      */
     abstract public function execute($args);
 
-    public final function getHandle()
+    final public function getHandle()
     {
         return array_diff(get_class_methods($this), get_class_methods(__CLASS__));
     }
-
 }

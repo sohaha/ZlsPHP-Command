@@ -27,7 +27,7 @@ class Start extends Command
         if ($ip === '0.0.0.0') {
             $url = z::serverIp() . ':' . $port;
         }
-        echo $this->strN("HttpServe: http://{$url}", 'white', 'red') . PHP_EOL;
+        echo $this->echoN("HttpServe: http://{$url}", 'white', 'red') . PHP_EOL;
         try {
             echo z::command($cmd);
         } catch (\Zls_Exception_500 $e) {
@@ -54,5 +54,4 @@ class Start extends Command
             ' -host 0.0.0.0' => 'To make the network access',
         ];
     }
-
 }
