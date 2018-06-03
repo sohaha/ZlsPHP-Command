@@ -9,10 +9,16 @@
  * @updatetime    2018-02-01 15:01
  */
 $DOCUMENT_ROOT = $_SERVER["DOCUMENT_ROOT"];
-$SCRIPT_FILENAME = isset($_SERVER["SCRIPT_FILENAME"]) ? $_SERVER["SCRIPT_FILENAME"] : $DOCUMENT_ROOT . '/index.php';
 $REQUEST_URI = explode('?', $_SERVER["REQUEST_URI"]);
+$indexs = ['index.php', 'default.php'];
 if (file_exists($DOCUMENT_ROOT . $REQUEST_URI[0])) {
     return false;
 } else {
-    require_once $SCRIPT_FILENAME;
+    foreach ($indexs as $index) {
+        $indexFile = $DOCUMENT_ROOT . '/' . $index;
+        if (file_exists($indexFile)) {
+            include $indexFile;
+            break;
+        }
+    }
 }

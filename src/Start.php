@@ -52,7 +52,7 @@ class Start extends Command
         $ip = z::arrayGet($args, ['host', 'H'], '127.0.0.1');
         $url = $ip . ':' . $port;
         $cmd = z::phpPath() . ' -S ' . $url . ' -t ' . z::realPath(ZLS_PATH);
-        if (file_exists($filePath = __DIR__ . '/StartRun.php')) {
+        if (file_exists($filePath = __DIR__ . '/Start/StartRun.php')) {
             $cmd .= ' -file ' . $filePath;
         }
         if ($ip === '0.0.0.0') {
