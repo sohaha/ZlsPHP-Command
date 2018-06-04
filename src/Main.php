@@ -15,7 +15,7 @@ class Main extends Command
     private $args = [];
 
     private $command = [
-        'set'  => '\Zls\Command\Set',
+        'set'    => '\Zls\Command\Set',
         'start'  => '\Zls\Command\Start',
         'create' => '\Zls\Command\Create',
         'mysql'  => '\Zls\Command\Mysql',
@@ -44,19 +44,19 @@ class Main extends Command
             z::finish();
         }
         $commandRun = z::arrayGet($args, 0);
-        $this->echoN('ZlsPHP command lists', 'light_green');
-        $this->echoN();
-        $this->echoN('Usage:', 'yellow');
-        $this->echoN(
+        $this->printStrN('ZlsPHP command lists', 'light_green');
+        $this->printStrN();
+        $this->printStrN('Usage:', 'yellow');
+        $this->printStrN(
             '  ' .
             $commandRun .
             ' ' . $this->color('{command}', 'green') .
             ' ' . $this->color('[arg1 value1 args2=value2 ...] [Options]', 'dark_gray')
         );
-        $this->echoN();
-        $this->echoN('Options:', 'yellow');
-        $this->echoN('  ' . $this->color('-h, -help', 'green') . '    Show command help');
-        $this->echoN('  ' . $this->color('-c, -color', 'green') . '   Show Color name');
+        $this->printStrN();
+        $this->printStrN('Options:', 'yellow');
+        $this->printStrN('  ' . $this->color('-h, -help', 'green') . '    Show command help');
+        $this->printStrN('  ' . $this->color('-c, -color', 'green') . '   Show Color name');
         $files = Z::scanFile(ZLS_APP_PATH . 'classes/Command', 99, function ($dir, $name) {
             if (is_dir($dir . '/' . $name)) {
                 return true;
@@ -64,19 +64,19 @@ class Main extends Command
                 return Z::strEndsWith(strtolower(pathinfo($name, PATHINFO_EXTENSION)), 'php');
             }
         });
-        $this->echoN();
-        $this->echoN('BuiltIn Command:', 'yellow');
+        $this->printStrN();
+        $this->printStrN('BuiltIn Command:', 'yellow');
         $this->getInfo($this->command);
-        $this->echoN();
+        $this->printStrN();
         $commandFile = [];
         $this->getClassName($commandFile, $files);
         $extendCommand = array_merge($commandFile, Z::config()->getCommands());
         if ($extendCommand) {
-            $this->echoN('Extend Command:', 'yellow');
+            $this->printStrN('Extend Command:', 'yellow');
             $this->getInfo(array_diff($extendCommand, $this->command));
         }
-        $this->echoN();
-        $this->echoN('More command information, please use: '.$commandRun.' '.$this->color('{command}', 'green').' -h');
+        $this->printStrN();
+        $this->printStrN('More command information, please use: ' . $commandRun . ' ' . $this->color('{command}', 'green') . ' -h');
     }
 
     private function getColor()
@@ -84,16 +84,16 @@ class Main extends Command
         $fgs = $this->getColors();
         $bgs = $this->getBgColors();
         foreach ($fgs as $i => $v) {
-            echo $this->echo(str_pad($i, 10, ' '), $i) . "\t";
+            echo $this->printStr(str_pad($i, 10, ' '), $i) . "\t";
             if (isset($bgs[$i])) {
-                echo $this->echo($i, null, $i);
+                $this->printStr($i, null, $i);
             }
             echo PHP_EOL;
         }
         echo PHP_EOL;
         foreach ($fgs as $fg => $v) {
             foreach ($bgs as $bg => $vv) {
-                echo $this->echoN(str_pad("Text:{$fg}+Bg:{$bg}", 50, ' '), $fg, $bg);
+                $this->printStrN(str_pad("Text:{$fg}+Bg:{$bg}", 50, ' '), $fg, $bg);
             }
         }
     }
@@ -112,7 +112,7 @@ class Main extends Command
             }
         }
         foreach ($lists as $key => $list) {
-            $this->echoN(
+            $this->printStrN(
                 '  ' .
                 $this->color(str_pad($key, $maxLen), 'green') .
                 '   ' .

@@ -146,7 +146,7 @@ class Mysql extends Command
              * @var \Zls\Command\Mysql\MysqlEI $MysqlEI
              */
             $MysqlEI = Z::extension('Command\Mysql\MysqlEI');
-            echo $this->echoN('Start backup, please wait', 'light_blue');
+            echo $this->printStrN('Start backup, please wait', 'light_blue');
             $MysqlEI->export($table, $dir, $this->prefix, $ignoreData, $filename, $size);
         } catch (\Exception $exc) {
             echo $exc->getMessage() . PHP_EOL;

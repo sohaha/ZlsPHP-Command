@@ -60,13 +60,13 @@ class Set extends Command
         $config = z::config('ini');
         $config = z::arrayMap($config, function ($v) {
             $config = [];
-            foreach ($v as $k => $v) {
-                $config[$k] = ($k === 'debug') ? 0 : $v;
+            foreach ($v as $k => $vv) {
+                $config[$k] = ($k === 'debug') ? 0 : $vv;
             }
 
             return $config;
         });
         $status = @file_put_contents(ZLS_PATH . '../zls.ini', $Ini->extended($config));
-        $this->echoN('Modify zls.ini success', 'green');
+        $this->printStrN('Modify zls.ini success', 'green');
     }
 }

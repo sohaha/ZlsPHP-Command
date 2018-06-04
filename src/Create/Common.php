@@ -157,8 +157,8 @@ class Common
             }
             if ($content && file_put_contents($file, $content)) {
                 $this->success("{$tip} [ {$classname} ] created successfully.");
-                $this->echoN("FilePath: {$file}");
-                $this->echoN();
+                $this->printStrN("FilePath: {$file}");
+                $this->printStrN();
             }
         } catch (\ReflectionException $e) {
             echo $e->getMessage();
@@ -175,7 +175,7 @@ class Common
         $content = $this->$style($typename, $classname, $parentClass, $method);
         if (file_put_contents($file, $content)) {
             $this->success("{$tip} [ {$classname} ] created successfully");
-            $this->echoN("FilePath: {$file}");
+            $this->printStrN("FilePath: {$file}");
         }
     }
 

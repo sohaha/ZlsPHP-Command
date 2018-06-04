@@ -62,8 +62,8 @@ class MysqlEI
                 $res = $this->writeFile($_sql, $file, $dir);
                 if ($res === true) {
                     $volume = $p === 1 ? '' : 'volume-' . $p . ' ';
-                    $this->echoN("{$volume}backup completed.", 'light_green');
-                    $this->echoN("Generate a backup file {$file}.", 'cyan');
+                    $this->printStrN("{$volume}backup completed.", 'light_green');
+                    $this->printStrN("Generate a backup file {$file}.", 'cyan');
                 } else {
                     $this->error('Exception', "volume-" . $p . " backup error:" . $res);
                     Z::finish();
@@ -125,8 +125,8 @@ class MysqlEI
             $res = $this->writeFile($sql, $filename, $dir);
             if ($res === true) {
                 $volume = $p === 1 ? '' : 'volume-' . $p . ' ';
-                $this->echoN("{$volume}backup completed.", 'light_green');
-                $this->echoN("Generate a backup file {$filename}.", 'cyan');
+                $this->printStrN("{$volume}backup completed.", 'light_green');
+                $this->printStrN("Generate a backup file {$filename}.", 'cyan');
             } else {
                 z::throwIf(true, 'Exception', "volume-" . $p . " backup error:" . $res);
             }
@@ -257,9 +257,9 @@ class MysqlEI
         $this->sqldir = $sqlpath ['dirname'];
         $volume = explode("_v", $sqlfile);
         $volume_path = $volume [0];
-        $this->echoN("Import backup data");
+        $this->printStrN("Import backup data");
         if (empty($volume [1])) {
-            $this->echoN('Import sql：' . $sqlfile);
+            $this->printStrN('Import sql：' . $sqlfile);
             z::throwIf(!$this->_import($sqlfile, $tablePrefix), 'Exception', 'Database import failed');
             $this->success('Database import successful');
         } else {
@@ -269,10 +269,10 @@ class MysqlEI
                 $tmpfile = $volume_path . "_v" . $volume_id . ".sql";
                 if (file_exists($tmpfile)) {
                     $basename = pathinfo($tmpfile, PATHINFO_BASENAME);
-                    $this->echoN("Import volumes-{$volume_id}: {$basename}");
+                    $this->printStrN("Import volumes-{$volume_id}: {$basename}");
                     z::throwIf(!$this->_import($tmpfile, $tablePrefix), 'Exception', "Import volumes{$volume_id}：" . $tmpfile . ' error! It may be that the database structure is damaged! , Please try to import from volume 1');
                 } else {
-                    $this->echoN();
+                    $this->printStrN();
                     $this->success("This backup of all volumes was successfully imported");
                     break;
                 }

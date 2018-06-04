@@ -2,6 +2,8 @@
 
 namespace Zls\Command;
 
+use Z;
+
 /**
  * Utils
  * @author        影浅-Seekwe
@@ -51,11 +53,11 @@ trait Utils
 
     final public function error($err, $color = 'red')
     {
-        $this->echo('[ Error ]', 'white', 'red');
-        $this->echoN(': ' . $err, $color);
+        $this->printStr('[ Error ]', 'white', 'red');
+        $this->printStrN(': ' . $err, $color);
     }
 
-    final public function echo($str = '', $color = '', $bgColor = null)
+    final public function printStr($str = '', $color = '', $bgColor = null)
     {
         echo $this->color($str, $color, $bgColor);
     }
@@ -74,7 +76,7 @@ trait Utils
         return $colorStr;
     }
 
-    final public function echoN($str = '', $color = '', $bgColor = null)
+    final public function printStrN($str = '', $color = '', $bgColor = null)
     {
         echo $this->color($str, $color, $bgColor);
         echo PHP_EOL;
@@ -82,7 +84,8 @@ trait Utils
 
     final public function success($msg, $color = 'green')
     {
-        $this->echo('Success', 'white', 'green') . $this->echoN(': ' . $msg, $color);
+        $this->printStr('Success', 'white', 'green');
+        $this->printStrN(': ' . $msg, $color);
     }
 
     final public function ask($question, $default = null, $canNull = false)
@@ -106,5 +109,17 @@ trait Utils
         $bgColor = $bgColor ? "\033[" . z::arrayGet($this->bgColors, $bgColor, 'white') . "m" : '';
         $mprogressColor = $mprogressColor ? "\033[" . z::arrayGet($this->colors, $mprogressColor, 'white') . "m" : '';
         printf("{$title}{$bgColor}{$mprogressColor} %d%% %s\r\033[0m", $i, str_repeat($pad, $i));
+    }
+
+    final public function copyFile($originFile, $file, $force = false, \Closure $cb = null)
+    {
+        $originFile = Z::realPath($originFile);
+        $file = Z::realPath($file);
+        $status = false;
+        if (!file_exists($file) || $force) {
+            $this->printStrN("copy config: {$originFile} -> {$file}");
+            $status = !!@copy($originFile, $file);
+        }
+        $cb($status);
     }
 }

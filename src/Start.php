@@ -58,7 +58,7 @@ class Start extends Command
         if ($ip === '0.0.0.0') {
             $url = z::serverIp() . ':' . $port;
         }
-        echo $this->echoN("HttpServe: http://{$url}", 'white', 'red') . PHP_EOL;
+        echo $this->printStrN("HttpServe: http://{$url}", 'white', 'red') . PHP_EOL;
         try {
             echo z::command($cmd);
         } catch (\Zls_Exception_500 $e) {

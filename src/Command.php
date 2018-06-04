@@ -27,29 +27,29 @@ abstract class Command
         $usage .= $handles ? $this->color(':{handle}', 'cyan') : '';
         $usage .= $options ? $this->color(' [options ...]', 'blue') : '';
         $example = static::example($args);
-        $this->echoN(static::description($args), 'light_green');
-        $this->echoN();
-        $this->echoN('Usage:', 'yellow');
-        $this->echoN('  ' . $commandStr . $usage);
+        $this->printStrN(static::description($args), 'light_green');
+        $this->printStrN();
+        $this->printStrN('Usage:', 'yellow');
+        $this->printStrN('  ' . $commandStr . $usage);
         if ($handles) {
-            $this->echoN();
-            $this->echoN('Handle:', 'yellow');
+            $this->printStrN();
+            $this->printStrN('Handle:', 'yellow');
             foreach ($this->beautify($handles) as $k => $v) {
-                $this->echoN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color(':' . $k, 'cyan') . '    ' . $v);
+                $this->printStrN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color(':' . $k, 'cyan') . '    ' . $v);
             }
         }
         if ($options) {
-            $this->echoN();
-            $this->echoN('Options:', 'yellow');
+            $this->printStrN();
+            $this->printStrN('Options:', 'yellow');
             foreach ($this->beautify($options) as $k => $v) {
-                $this->echoN('  ' . $this->color($k, 'blue') . '    ' . $v);
+                $this->printStrN('  ' . $this->color($k, 'blue') . '    ' . $v);
             }
         }
         if ($example) {
-            $this->echoN();
-            $this->echoN('Example:', 'yellow');
+            $this->printStrN();
+            $this->printStrN('Example:', 'yellow');
             foreach ($this->beautify($example) as $k => $v) {
-                $this->echoN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color($k, 'cyan') . '    ' . $v);
+                $this->printStrN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color($k, 'cyan') . '    ' . $v);
             }
         }
     }
@@ -71,6 +71,7 @@ abstract class Command
     final public function getHandle()
     {
         $keys = array_diff(get_class_methods($this), get_class_methods(__CLASS__));
+
         return array_fill_keys($keys, '--');
     }
 
