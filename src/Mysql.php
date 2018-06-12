@@ -15,7 +15,7 @@ use Z;
  */
 class Mysql extends Command
 {
-    private $dir = '../database';
+    private $dir = '../database/mysql';
     private $prefix = 'Command_';
 
     public function description()

@@ -81,6 +81,7 @@ abstract class Command
      */
     public function example()
     {
+        return [];
     }
 
     /**

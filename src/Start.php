@@ -23,7 +23,7 @@ class Start extends Command
     public function options()
     {
         return [
-            '-host, -H' => 'Listening IP',
+            '-host' => '    Listening IP',
             '-port, -P' => 'Listening Port',
         ];
     }
@@ -49,7 +49,7 @@ class Start extends Command
     public function execute($args)
     {
         $port = z::arrayGet($args, ['port', 'P', 3], 3780);
-        $ip = z::arrayGet($args, ['host', 'H'], '127.0.0.1');
+        $ip = z::arrayGet($args, ['host'], '127.0.0.1');
         $url = $ip . ':' . $port;
         $cmd = z::phpPath() . ' -S ' . $url . ' -t ' . z::realPath(ZLS_PATH);
         if (file_exists($filePath = __DIR__ . '/Start/StartRun.php')) {
