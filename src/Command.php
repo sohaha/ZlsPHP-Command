@@ -17,8 +17,8 @@ abstract class Command
     final public function help($args)
     {
         $command = Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
-        $options = static::options($args);
-        $handles = static::handle($args);
+        $options = static::options();
+        $handles = static::handle();
         if ($handles === true) {
             $handles = $this->getHandle();
         }
@@ -26,8 +26,8 @@ abstract class Command
         $usage = '';
         $usage .= $handles ? $this->color(':{handle}', 'cyan') : '';
         $usage .= $options ? $this->color(' [options ...]', 'blue') : '';
-        $example = static::example($args);
-        $this->printStrN(static::description($args), 'light_green');
+        $example = static::example();
+        $this->printStrN(static::description(), 'light_green');
         $this->printStrN();
         $this->printStrN('Usage:', 'yellow');
         $this->printStrN('  ' . $commandStr . $usage);
@@ -94,14 +94,16 @@ abstract class Command
     {
         $lists = [];
         $maxLen = 10;
-        foreach ($commands as $key => $value) {
-            $len = strlen($key);
-            if ($len > $maxLen) {
-                $maxLen = $len;
-            }
+        $_tmp = array_keys($commands);
+        usort($_tmp, function ($e, $c) {
+            return strlen($e)<strlen($c);
+        });
+        $len = strlen($_tmp[0]);
+        if ($maxLen > $len) {
+            $len = $maxLen;
         }
         foreach ($commands as $key => $value) {
-            $lists[str_pad($key, $maxLen)] = $value;
+            $lists[str_pad($key, $len)] = $value;
         }
 
         return $lists;

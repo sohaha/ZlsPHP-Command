@@ -23,8 +23,9 @@ class Start extends Command
     public function options()
     {
         return [
-            '-host' => '    Listening IP',
-            '-port, -P' => 'Listening Port',
+            '--host, -I' =>     'Listening IP',
+            '--port, -P' => 'Listening Port',
+            '--external, -C'=>'Open extranet access and ignore the --host setting'
         ];
     }
 
@@ -36,20 +37,24 @@ class Start extends Command
     public function example()
     {
         return [
-            ' -host 0.0.0.0' => 'To make the network access',
+            ' --host 0.0.0.0' => 'To make the network access',
+            ' -P 8080' => 'Listening 8080 Port',
         ];
     }
 
     public function port()
     {
         $port = $this->ask('端口: ', null, '请输入端口: ');
-        $this->execute(['port' => $port]);
+        $this->execute(['-port' => $port]);
     }
 
     public function execute($args)
     {
-        $port = z::arrayGet($args, ['port', 'P', 3], 3780);
-        $ip = z::arrayGet($args, ['host'], '127.0.0.1');
+        $port = z::arrayGet($args, ['-port', 'P', 3], 3780);
+        $ip = z::arrayGet($args, ['-host','I'], '127.0.0.1');
+        if (z::arrayGet($args, ['-external','C'])) {
+            $ip = '0.0.0.0';
+        }
         $url = $ip . ':' . $port;
         $cmd = z::phpPath() . ' -S ' . $url . ' -t ' . z::realPath(ZLS_PATH);
         if (file_exists($filePath = __DIR__ . '/Start/StartRun.php')) {

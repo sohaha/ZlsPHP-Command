@@ -34,9 +34,9 @@ class Mysql extends Command
     public function options()
     {
         return [
-            '-filename' => 'Database filePath',
-            '-backup'   => 'Import the old backup data',
-            '-ignore'   => 'Export the ignore tableNames, Multiple comma separated',
+            '--filename' => 'Database filePath',
+            '--backup'   => 'Import the old backup data',
+            '--ignore'   => 'Export the ignore tableNames, Multiple comma separated',
         ];
     }
 
@@ -52,9 +52,9 @@ class Mysql extends Command
 
     public function import($args)
     {
-        $filePath = z::arrayGet($args, 'filename');
-        $backup = z::arrayGet($args, 'backup', true);
-        $tablePrefix = z::tap(\explode(':', z::arrayGet($args, 'prefix', '')), function ($prefix) {
+        $filePath = z::arrayGet($args, '-filename');
+        $backup = z::arrayGet($args, '-backup', true);
+        $tablePrefix = z::tap(\explode(':', z::arrayGet($args, '-prefix', '')), function ($prefix) {
             return (count($prefix) < 2) ? false : $prefix;
         });
         $dbExist = true;
@@ -123,13 +123,13 @@ class Mysql extends Command
 
     public function export($args)
     {
-        $table = z::arrayGet($args, 'table');
-        $filename = z::arrayGet($args, 'filename');
-        $size = z::arrayGet($args, 'size', 1024);
-        if ($dir = z::arrayGet($args, 'dir')) {
+        $table = z::arrayGet($args, '-table');
+        $filename = z::arrayGet($args, '-filename');
+        $size = z::arrayGet($args, '-size', 1024);
+        if ($dir = z::arrayGet($args, '-dir')) {
             $dir = z::realPathMkdir($dir, true);
         }
-        if ($ignoreData = z::arrayGet($args, 'ignore')) {
+        if ($ignoreData = z::arrayGet($args, '-ignore')) {
             $_ignoreData = [];
             foreach (\explode(',', $ignoreData) as $v) {
                 $v = \explode(':', $v);
@@ -146,7 +146,7 @@ class Mysql extends Command
              * @var \Zls\Command\Mysql\MysqlEI $MysqlEI
              */
             $MysqlEI = Z::extension('Command\Mysql\MysqlEI');
-            echo $this->printStrN('Start backup, please wait', 'light_blue');
+            $this->printStrN('Start backup, please wait', 'light_blue');
             $MysqlEI->export($table, $dir, $this->prefix, $ignoreData, $filename, $size);
         } catch (\Exception $exc) {
             echo $exc->getMessage() . PHP_EOL;

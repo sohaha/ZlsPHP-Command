@@ -39,7 +39,7 @@ class Main extends Command
 
     public function execute($args)
     {
-        if (z::arrayGet($args, ['color', 'c'])) {
+        if (z::arrayGet($args, ['-color', 'C'])) {
             $this->getColor();
             z::finish();
         }
@@ -51,12 +51,12 @@ class Main extends Command
             '  ' .
             $commandRun .
             ' ' . $this->color('{command}', 'green') .
-            ' ' . $this->color('[arg1 value1 args2=value2 ...] [Options]', 'dark_gray')
+            ' ' . $this->color('[arg1 value1 args2=value2 args3 ...] [Options]', 'dark_gray')
         );
         $this->printStrN();
         $this->printStrN('Options:', 'yellow');
-        $this->printStrN('  ' . $this->color('-h, -help', 'green') . '    Show command help');
-        $this->printStrN('  ' . $this->color('-c, -color', 'green') . '   Show Color name');
+        $this->printStrN('  ' . $this->color('-H, --help', 'green') . '    Show command help');
+        $this->printStrN('  ' . $this->color('-C, --color', 'green') . '   Show Color name');
         $files = Z::scanFile(ZLS_APP_PATH . 'classes/Command', 99, function ($dir, $name) {
             if (is_dir($dir . '/' . $name)) {
                 return true;
