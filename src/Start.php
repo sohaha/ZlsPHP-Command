@@ -17,7 +17,7 @@ class Start extends Command
 {
     public function description()
     {
-        return 'Quick Start web server';
+        return 'Quick Start Web Server';
     }
 
     public function options()
