@@ -12,34 +12,44 @@ use Z;
  */
 trait Utils
 {
-    private $colors = [
-        'black'        => '0;30',
-        'dark_gray'    => '1;30',
-        'blue'         => '0;34',
-        'light_blue'   => '1;34',
-        'green'        => '0;32',
-        'light_green'  => '1;32',
-        'cyan'         => '0;36',
-        'light_cyan'   => '1;36',
-        'red'          => '0;31',
-        'light_red'    => '1;31',
-        'purple'       => '0;35',
-        'light_purple' => '1;35',
-        'brown'        => '0;33',
-        'yellow'       => '1;33',
-        'light_gray'   => '0;37',
-        'white'        => '1;37',
-    ];
-    private $bgColors = [
-        'black'      => '40',
-        'red'        => '41',
-        'green'      => '42',
-        'yellow'     => '43',
-        'blue'       => '44',
-        'magenta'    => '45',
-        'cyan'       => '46',
-        'light_gray' => '47',
-    ];
+    private $showColor;
+    private $colors = [];
+    private $bgColors = [];
+
+    public function __construct()
+    {
+        $this->showColor = (false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'));
+        if ($this->showColor) {
+            $this->colors = [
+                'black'        => '0;30',
+                'dark_gray'    => '1;30',
+                'blue'         => '0;34',
+                'light_blue'   => '1;34',
+                'green'        => '0;32',
+                'light_green'  => '1;32',
+                'cyan'         => '0;36',
+                'light_cyan'   => '1;36',
+                'red'          => '0;31',
+                'light_red'    => '1;31',
+                'purple'       => '0;35',
+                'light_purple' => '1;35',
+                'brown'        => '0;33',
+                'yellow'       => '1;33',
+                'light_gray'   => '0;37',
+                'white'        => '1;37',
+            ];
+            $this->bgColors = [
+                'black'      => '40',
+                'red'        => '41',
+                'green'      => '42',
+                'yellow'     => '43',
+                'blue'       => '44',
+                'magenta'    => '45',
+                'cyan'       => '46',
+                'light_gray' => '47',
+            ];
+        }
+    }
 
     final public function getColors()
     {
@@ -64,16 +74,17 @@ trait Utils
 
     final public function color($str = '', $color = null, $bgColor = null)
     {
-        $colorStr = "";
-        if (isset($this->colors[$color])) {
-            $colorStr .= "\033[" . $this->colors[$color] . "m";
-        }
-        if (isset($this->bgColors[$bgColor])) {
-            $colorStr .= "\033[" . $this->bgColors[$bgColor] . "m";
-        }
-        $colorStr .= $str . "\033[0m";
+        $colorStr = '';
+        $colorStr .= $this->_color($color, $this->colors);
+        $colorStr .= $this->_color($bgColor, $this->bgColors);
+        $colorStr .= $str . $this->_color(0, [0]);
 
         return $colorStr;
+    }
+
+    final public function _color($color = '', array $colors = [])
+    {
+        return ($this->showColor && isset($colors[$color])) ? "\033[" . $colors[$color] . "m" : '';
     }
 
     final public function printStrN($str = '', $color = '', $bgColor = null)
