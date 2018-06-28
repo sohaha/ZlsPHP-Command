@@ -23,9 +23,9 @@ class Start extends Command
     public function options()
     {
         return [
-            '--host, -I' =>     'Listening IP',
-            '--port, -P' => 'Listening Port',
-            '--external, -C'=>'Open extranet access and ignore the --host setting'
+            '-I, --host' =>     'Listening IP',
+            '-P, --port' => 'Listening Port',
+            '-C, --external'=>'Open extranet access and ignore the --host setting'
         ];
     }
 

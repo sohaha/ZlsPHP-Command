@@ -31,6 +31,11 @@ class MysqlEI
     private $sqldir;
     private $master;
 
+    /**
+     * MysqlEI constructor.
+     * @param string $group
+     * @throws \Zls_Exception_Database
+     */
     public function __construct($group = '')
     {
         $this->db = z::db($group, true);
@@ -44,7 +49,18 @@ class MysqlEI
         $this->db->pod()->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_NATURAL);
     }
 
-    public function export($tablename = '', $dir = '', $prefix = '', $ignoreData = [], $name = '', $size = 1024)
+    /**
+     * 导出数据
+     * @param string $tablename
+     * @param string $dir
+     * @param string $prefix
+     * @param array  $ignoreData
+     * @param array  $includeData
+     * @param string $name
+     * @param int    $size
+     * @return bool|string
+     */
+    public function export($tablename = '', $dir = '', $prefix = '', $ignoreData = [], array $includeData = [], $name = '', $size = 1024)
     {
         if ($dir !== false) {
             $dir = $dir ? $dir : z::realPathMkdir('../database', true);
@@ -53,7 +69,6 @@ class MysqlEI
             }
         }
         $sql = '';
-        $db = $this->db;
         $sql .= $this->retrieve();
         $p = 1;
         $thanSize = function (&$_sql, &$p, $filename) use ($size, $dir) {
@@ -74,7 +89,7 @@ class MysqlEI
         };
         $tablePrefix = $this->config['tablePrefix'];
         if (!empty($tablename)) {
-            $tables = z::arrayMap(\explode(',', $tablename), function ($name) use ($tablePrefix) {
+            $tables = z::arrayMap(explode(',', $tablename), function ($name) use ($tablePrefix) {
                 return ['Name' => $tablePrefix . $name];
             });
             $filename = $prefix . date('YmdHis') . "_{$tablename}";
@@ -87,25 +102,34 @@ class MysqlEI
         if ($name) {
             $filename = $name;
         }
-        $count = count($tables);
+        //$count = count($tables);
         foreach ($tables as $i => $table) {
             $tablename = $table['Name'];
-            $isIgnore = z::arrayGet($ignoreData, str_replace($tablePrefix, '', $tablename), null);
-            if (is_null($isIgnore) && is_array($ignoreData)) {
-                foreach ($ignoreData as $v) {
-                    if ($tablePrefix . $v === $tablename) {
-                        $isIgnore = false;
-                        break;
+            $isInclud = false;
+            if (z::arrayKeyExists($tablename, $includeData)) {
+                $isIgnoreData = !$includeData[$tablename];
+                $isIgnoreTable = false;
+                $isInclud = true;
+            } else {
+                $isIgnore = z::arrayGet($ignoreData, str_replace($tablePrefix, '', $tablename), null);
+                if (is_null($isIgnore) && is_array($ignoreData)) {
+                    foreach ($ignoreData as $v) {
+                        if ($tablePrefix . $v === $tablename) {
+                            $isIgnore = false;
+                            break;
+                        }
                     }
                 }
+                $isIgnoreTable = $isIgnore === true;
+                $isIgnoreData = $isIgnore === false;
             }
-            $isIgnoreTable = $isIgnore === true;
-            $isIgnoreData = $isIgnore === false;
-            if ($isIgnoreTable || (!!$tablePrefix && !z::strBeginsWith($table['Name'], $tablePrefix))) {
+            if (!$isInclud && ($isIgnoreTable || (!!$tablePrefix && !z::strBeginsWith($table['Name'], $tablePrefix)))) {
                 continue;
             }
             $sql .= $this->insertTableStructure($tablename, $isIgnoreData);
             if (!$isIgnoreData) {
+
+                $this->db->setTablePrefix($isInclud ? '' : $tablePrefix);
                 $total = $this->db->select('count(*) as total')->from($tablename)->execute()->value('total');
                 $pagesize = 200;
                 $pages = Z::page($total, 1, $pagesize, '{page}');
@@ -115,6 +139,7 @@ class MysqlEI
                         $sql .= $this->insertRecord($tablename, $k, $record);
                     }
                 }
+                $this->db->setTablePrefix($tablePrefix);
             }
             if ($dir) {
                 $thanSize($sql, $p, $filename);
@@ -124,6 +149,7 @@ class MysqlEI
             $filename .= "_v" . $p . ".sql";
             $res = $this->writeFile($sql, $filename, $dir);
             if ($res === true) {
+                $filename = z::realPath($dir . $filename);
                 $volume = $p === 1 ? '' : 'volume-' . $p . ' ';
                 $this->printStrN("{$volume}backup completed.", 'light_green');
                 $this->printStrN("Generate a backup file {$filename}.", 'cyan');
@@ -190,7 +216,7 @@ class MysqlEI
     }
 
     /**
-     * 插入表结构
+     * 表结构
      * @param string $table
      * @param bool   $autoIncrement
      * @return string
@@ -201,9 +227,11 @@ class MysqlEI
         $sql .= "--" . $this->ds;
         $sql .= "-- 表的结构" . $table . $this->ds;
         $sql .= "--" . $this->ds . $this->ds;
-        $sql .= 'DROP TABLE IF EXISTS `' . $table . '`' . $this->sqlEnd . $this->ds;
+        $sql .=
+            /** @lang text */
+            'DROP TABLE IF EXISTS `' . $table . '`' . $this->sqlEnd . $this->ds;
         $row = $this->db->execute('SHOW CREATE TABLE `' . $table . '`')->row();
-        $sql .= ($autoIncrement) ? \preg_replace('/AUTO_INCREMENT=\d+/i', 'AUTO_INCREMENT=1', $row ['Create Table']) : $row ['Create Table'];
+        $sql .= ($autoIncrement) ? preg_replace('/AUTO_INCREMENT=\d+/i', 'AUTO_INCREMENT=1', $row ['Create Table']) : $row ['Create Table'];
         $sql .= $this->sqlEnd . $this->ds;
         $sql .= $this->ds;
         $sql .= "--" . $this->ds;
@@ -214,8 +242,9 @@ class MysqlEI
         return $sql;
     }
 
+
     /**
-     * 插入单条记录
+     * 单条记录
      * @param string $table
      * @param int    $i
      * @param array  $record
@@ -224,7 +253,9 @@ class MysqlEI
     private function insertRecord($table, $i, $record)
     {
         $comma = "";
-        $insert = "INSERT INTO `" . $table . "` VALUES(";
+        $insert =
+            /** @lang text */
+            "INSERT INTO `" . $table . "` VALUES(";
         foreach ($record as $k => $v) {
             $value = $v;
             if ($value !== null) {
@@ -289,43 +320,64 @@ class MysqlEI
      */
     private function _import($sqlfile, $tablePrefix = null)
     {
-        $sqls = [];
-        $f = fopen($sqlfile, "rb");
-        $i = 0;
-        $create = '';
-        while (!feof($f)) {
-            $i++;
-            $line = fgets($f);
-            if (trim($line) == '' || preg_match('/--(.?)/', $line, $match)) {
-                continue;
-            }
-            if (!preg_match('/;/', $line, $match) || preg_match('/ENGINE=/', $line, $match)) {
-                $create .= $line;
-                if (preg_match('/ENGINE=/', $create, $match)) {
-                    $sqls [] = $create;
-                    $create = '';
+        if (file_exists($sqlfile)) {
+            $sqls = [];
+            $f = fopen($sqlfile, "rb");
+            $i = 0;
+            $create = '';
+            while (!feof($f)) {
+                $i++;
+                $line = fgets($f);
+                if (trim($line) == '' || preg_match('/--(.?)/', $line, $match)) {
+                    continue;
                 }
-                continue;
+                if (!preg_match('/;/', $line, $match) || preg_match('/ENGINE=/', $line, $match)) {
+                    $create .= $line;
+                    if (preg_match('/ENGINE=/', $create, $match)) {
+                        $sqls [] = $create;
+                        $create = '';
+                    }
+                    continue;
+                }
+                $sqls [] = $line;
             }
-            $sqls [] = $line;
-        }
-        fclose($f);
-        $count = count($sqls);
-        foreach ($sqls as $i => $sql) {
-            if (!!$tablePrefix) {
-                $sql = str_replace("INSERT INTO `{$tablePrefix[0]}", "INSERT INTO `{$tablePrefix[1]}", $sql);
-                $sql = str_replace("CREATE TABLE `{$tablePrefix[0]}", "CREATE TABLE `{$tablePrefix[1]}", $sql);
-                $sql = str_replace("DROP TABLE IF EXISTS `{$tablePrefix[0]}", "DROP TABLE IF EXISTS `{$tablePrefix[1]}", $sql);
+            fclose($f);
+            $count = count($sqls);
+            foreach ($sqls as $i => $sql) {
+                if (!!$tablePrefix) {
+                    $sql = str_replace(
+                    /** @lang text */
+                        "INSERT INTO `{$tablePrefix[0]}",
+                        /** @lang text */
+                        "INSERT INTO `{$tablePrefix[1]}", $sql);
+                    $sql = str_replace(
+                    /** @lang text */
+                        "CREATE TABLE `{$tablePrefix[0]}",
+                        /** @lang text */
+                        "CREATE TABLE `{$tablePrefix[1]}", $sql);
+                    $sql = str_replace(
+                    /** @lang text */
+                        "DROP TABLE IF EXISTS `{$tablePrefix[0]}",
+                        /** @lang text */
+                        "DROP TABLE IF EXISTS `{$tablePrefix[1]}", $sql);
+                }
+                $this->progress(($i / $count) * 100, 'Importing: ', '', '', '');
+                if (!$this->db->execute(trim($sql))) {
+                    return false;
+                }
             }
-            $this->progress(($i / $count) * 100, 'Importing: ', '', '', '');
-            if (!$this->db->execute(trim($sql))) {
-                return false;
-            }
-        }
 
-        return true;
+            return true;
+        } else {
+            return false;
+        }
     }
 
+    /**
+     * @param        $tablename
+     * @param string $op
+     * @return bool
+     */
     private function lock($tablename, $op = "WRITE")
     {
         if ($this->db->execute("lock tables " . $tablename . " " . $op)) {
@@ -335,6 +387,9 @@ class MysqlEI
         }
     }
 
+    /**
+     * @return bool
+     */
     private function unlock()
     {
         if ($this->db->execute("unlock tables")) {

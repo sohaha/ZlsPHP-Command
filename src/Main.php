@@ -16,8 +16,9 @@ class Main extends Command
 
     private $command = [
         'set'    => '\Zls\Command\Set',
+        //'run'    => '\Zls\Command\Run',
         'start'  => '\Zls\Command\Start',
-        'update' => '\Zls\Command\Update',
+        //'update' => '\Zls\Command\Update',
         'create' => '\Zls\Command\Create',
         'mysql'  => '\Zls\Command\Mysql',
     ];
