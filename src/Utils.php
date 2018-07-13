@@ -5,10 +5,10 @@ namespace Zls\Command;
 use Z;
 
 /**
- * Utils
+ * Command\Utils
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
- * @updatetime    2018-5-31 16:48:37
+ * @updatetime    2018-7-13 11:54:51
  */
 trait Utils
 {
@@ -18,7 +18,7 @@ trait Utils
 
     public function __construct()
     {
-        $this->showColor = (false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI'));
+        $this->showColor = $this->ansiColorsSupported();
         if ($this->showColor) {
             $this->colors = [
                 'black'        => '0;30',
@@ -49,6 +49,13 @@ trait Utils
                 'light_gray' => '47',
             ];
         }
+    }
+
+    private function ansiColorsSupported()
+    {
+        return DIRECTORY_SEPARATOR === '\\'
+            ? getenv('ANSICON') !== false || getenv('ConEmuANSI') === 'ON'
+            : function_exists('posix_isatty') && @posix_isatty(STDOUT);
     }
 
     final public function getColors()

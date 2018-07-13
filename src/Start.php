@@ -23,9 +23,9 @@ class Start extends Command
     public function options()
     {
         return [
-            '-I, --host' =>     'Listening IP',
-            '-P, --port' => 'Listening Port',
-            '-C, --external'=>'Open extranet access and ignore the --host setting'
+            '-I, -i, --host <host>' => 'Listening IP',
+            '-P, -p, --port <port>' => 'Listening Port',
+            '-C,     --external'    => 'Open extranet access and ignore the --host setting',
         ];
     }
 
@@ -38,7 +38,7 @@ class Start extends Command
     {
         return [
             ' --host 0.0.0.0' => 'To make the network access',
-            ' -P 8080' => 'Listening 8080 Port',
+            ' -P 8080'        => 'Listening 8080 Port',
         ];
     }
 
@@ -51,8 +51,8 @@ class Start extends Command
     public function execute($args)
     {
         $port = z::arrayGet($args, ['-port', 'P', 3], 3780);
-        $ip = z::arrayGet($args, ['-host','I'], '127.0.0.1');
-        if (z::arrayGet($args, ['-external','C'])) {
+        $ip = z::arrayGet($args, ['-host', 'I'], '127.0.0.1');
+        if (z::arrayGet($args, ['-external', 'C'])) {
             $ip = '0.0.0.0';
         }
         $url = $ip . ':' . $port;
