@@ -112,7 +112,10 @@ trait Utils
         do {
             fwrite(STDOUT, $question);
             $value = trim(fgets(STDIN));
-            if ($value || !$canNull) {
+            if (!!$default && $value === '') {
+                $value = $default;
+                $status = true;
+            } elseif ($value || !$canNull) {
                 $status = true;
             } elseif (is_string($canNull)) {
                 $question = $canNull;
@@ -131,8 +134,8 @@ trait Utils
 
     final public function copyFile($originFile, $file, $force = false, \Closure $cb = null)
     {
-        $originFile = Z::realPath($originFile);
-        $file = Z::realPath($file);
+        $originFile = Z::realPath($originFile,false,false);
+        $file = Z::realPath($file,false,false);
         $status = false;
         if (!file_exists($file) || $force) {
             $this->printStrN("copy config: {$originFile} -> {$file}");

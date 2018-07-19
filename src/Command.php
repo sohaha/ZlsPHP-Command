@@ -14,7 +14,7 @@ abstract class Command
 {
     use Utils;
 
-    final public function help($args)
+    public function help($args)
     {
         $command = Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
         $options = static::options();
@@ -96,7 +96,7 @@ abstract class Command
         $maxLen = 10;
         $_tmp = array_keys($commands);
         usort($_tmp, function ($e, $c) {
-            return strlen($e)<strlen($c);
+            return strlen($e) < strlen($c);
         });
         $len = strlen($_tmp[0]);
         if ($maxLen > $len) {
