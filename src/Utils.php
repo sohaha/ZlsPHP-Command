@@ -102,7 +102,7 @@ trait Utils
 
     final public function success($msg, $color = 'green')
     {
-        $this->printStr('Success', 'white', 'green');
+        $this->printStr('[ Success ]', 'white', 'green');
         $this->printStrN(': ' . $msg, $color);
     }
 
