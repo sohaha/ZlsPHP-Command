@@ -18,6 +18,11 @@ trait Utils
 
     public function __construct()
     {
+        $this->initColor();
+    }
+
+    public function initColor()
+    {
         $this->showColor = $this->ansiColorsSupported();
         if ($this->showColor) {
             $this->colors = [
@@ -112,7 +117,7 @@ trait Utils
         do {
             fwrite(STDOUT, $question);
             $value = trim(fgets(STDIN));
-            if (!!$default && $value === '') {
+            if (!is_null($default) && ($value === '' || $value === '0')) {
                 $value = $default;
                 $status = true;
             } elseif ($value || !$canNull) {
@@ -132,15 +137,19 @@ trait Utils
         printf("{$title}{$bgColor}{$mprogressColor} %d%% %s\r\033[0m", $i, str_repeat($pad, $i));
     }
 
-    final public function copyFile($originFile, $file, $force = false, \Closure $cb = null)
+    final public function copyFile($originFile, $file, $force = false, \Closure $cb = null, $tip = 'copy config: ')
     {
-        $originFile = Z::realPath($originFile,false,false);
-        $file = Z::realPath($file,false,false);
+        $originFile = Z::realPath($originFile, false, false);
+        $file = Z::realPath($file, false, false);
         $status = false;
         if (!file_exists($file) || $force) {
-            $this->printStrN("copy config: {$originFile} -> {$file}");
+            if ($tip) {
+                $this->printStrN("{$tip}{$originFile} -> {$file}");
+            }
             $status = !!@copy($originFile, $file);
         }
-        $cb($status);
+        if ($cb instanceof \Closure) {
+            $cb($status);
+        }
     }
 }

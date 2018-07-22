@@ -8,15 +8,15 @@ use Z;
  * Command
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
- * @updatetime    2017-2-27 16:52:51
+ * @updatetime    2018-7-22 13:37:09
  */
 abstract class Command
 {
     use Utils;
 
-    public function help($args)
+    public function help($args, $command = null)
     {
-        $command = Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
+        $command = $command ?: Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
         $options = static::options();
         $handles = static::handle();
         if ($handles === true) {
