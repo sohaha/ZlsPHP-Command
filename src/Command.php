@@ -35,7 +35,8 @@ abstract class Command
             $this->printStrN();
             $this->printStrN('Handle:', 'yellow');
             foreach ($this->beautify($handles) as $k => $v) {
-                $this->printStrN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color(':' . $k, 'cyan') . '    ' . $v);
+                $m = z::strBeginsWith($k, ' ') ? $k : ':' . $k;
+                $this->printStrN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color($m, 'cyan') . '    ' . $v);
             }
         }
         if ($options) {
