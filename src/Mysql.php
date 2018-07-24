@@ -41,7 +41,7 @@ class Mysql extends Command
     public function example()
     {
         return [
-            ' export -N test -N log:1' => 'Export Database, ignore table "test" And ignore table "log" Data',
+            'export -N test -N log:1' => 'Export Database, ignore table "test" And ignore table "log" Data',
         ];
     }
 

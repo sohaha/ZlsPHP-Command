@@ -20,7 +20,7 @@ class Mysql
 
     public function creation($type, $table, $dbGroup)
     {
-        if (empty($table)||!is_string($table)) {
+        if (empty($table) || !is_string($table)) {
             $this->error('table name required, please use -table TableName');
             Z::finish();
         } else {
@@ -70,8 +70,8 @@ class Mysql
                     'comment' => $val['COLUMN_NAME'],//注释
                     'notnull' => $val['IS_NULLABLE'] == 'NO' ? 1 : 0,
                     'default' => $val['COLUMN_DEFAULT'],
-                    'primary' => (strtolower($val['COLUMN_NAME']) === $primary),
-                    'autoinc' => (strtolower($val['COLUMN_NAME']) === $primary),
+                    'primary' => (strtolower($val['COLUMN_NAME']) === strtolower($primary)),
+                    'autoinc' => (strtolower($val['COLUMN_NAME']) === strtolower($primary)),
                 ];
             }
         }
@@ -140,7 +140,10 @@ class Mysql
             $_columns[] = '\'' . $value['name'] . "'//" . $value['comment'] . PHP_EOL . '               ';
         }
         $columnsString = 'array(' . PHP_EOL . '              ' . implode(',', $_columns) . ')';
-        $code = "public function getColumns() {\n        return {columns};\n    }\n\n    public function getPrimaryKey() {\n        return '{primaryKey}';\n    }\n\n    public function getTable() {\n        return '{table}';\n    }\n\n    public function getBean() {\n        return parent::getBean();\n    }\n";
+        $code = "public function getColumns() {\n        return {columns};\n    }\n\n    public function getPrimaryKey() {\n        return '{primaryKey}';\n    }\n\n    public function getTable() {\n        return '{table}';\n    }\n";
+        if (strpos(z::getOpt(1), 'bean') !== false) {
+            $code .= "\n    public function getBean() {\n        return parent::getBean();\n    }\n";
+        }
         $code = str_replace(['{columns}', '{primaryKey}', '{table}'], [$columnsString, $primaryKey, $table], $code);
 
         return $code;

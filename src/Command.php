@@ -25,7 +25,7 @@ abstract class Command
         $commandStr = z::arrayGet($args, 0) . ' ' . $this->color($command);
         $usage = '';
         $usage .= $handles ? $this->color(':{handle}', 'cyan') : '';
-        $usage .= $options ? $this->color(' [options ...]', 'blue') : '';
+        $usage .= $options ? $this->color(' [options ...]', 'dark_gray') : '';
         $example = static::example();
         $this->printStrN(static::description(), 'light_green');
         $this->printStrN();
@@ -34,23 +34,23 @@ abstract class Command
         if ($handles) {
             $this->printStrN();
             $this->printStrN('Handle:', 'yellow');
-            foreach ($this->beautify($handles) as $k => $v) {
+            foreach ($this->beautify($handles, $command, 'cyan', ':') as $k => $v) {
                 $m = z::strBeginsWith($k, ' ') ? $k : ':' . $k;
-                $this->printStrN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color($m, 'cyan') . '    ' . $v);
+                $this->printStrN($v);
             }
         }
         if ($options) {
             $this->printStrN();
             $this->printStrN('Options:', 'yellow');
-            foreach ($this->beautify($options) as $k => $v) {
-                $this->printStrN('  ' . $this->color($k, 'blue') . '    ' . $v);
+            foreach ($this->beautify($options, '', 'dark_gray') as $k => $v) {
+                $this->printStrN($v);
             }
         }
         if ($example) {
             $this->printStrN();
-            $this->printStrN('Example:', 'yellow');
-            foreach ($this->beautify($example) as $k => $v) {
-                $this->printStrN('  ' . z::arrayGet($args, 0) . ' ' . $command . $this->color($k, 'cyan') . '    ' . $v);
+            $this->printStrN('Example:', 'yellow', '');
+            foreach ($this->beautify($example, z::arrayGet($args, 0) . ' ' . $command, 'cyan', false) as $k => $v) {
+                $this->printStrN($v);
             }
         }
     }
@@ -91,9 +91,19 @@ abstract class Command
      */
     abstract public function description();
 
-    final public function beautify($commands)
+    final public function beautify($commands, $command = '', $color = '', $pre = ' ')
     {
         $lists = [];
+        $isAssoc = function ($array) {
+            if (is_array($array)) {
+                $keys = array_keys($array);
+
+                return join('|', $keys) != join('|', array_keys($keys));
+            }
+
+            return false;
+        };
+        $is = $isAssoc($commands);
         $maxLen = 10;
         $_tmp = array_keys($commands);
         usort($_tmp, function ($e, $c) {
@@ -104,7 +114,15 @@ abstract class Command
             $len = $maxLen;
         }
         foreach ($commands as $key => $value) {
-            $lists[str_pad($key, $len)] = $value;
+            $m = $this->color(str_pad($key, $len), $color);
+            if (!z::strBeginsWith($key, ' ') && !z::strBeginsWith($key, ':')) {
+                if ($pre === false) {
+                    $command = '';
+                } else {
+                    $m = $pre . $m;
+                }
+            }
+            $lists[] = !$is ? '  ' . $command . $value : '  ' . $command . $m . '  ' . $value;
         }
 
         return $lists;
@@ -116,4 +134,6 @@ abstract class Command
      * @return mixed
      */
     abstract public function execute($args);
+
+
 }

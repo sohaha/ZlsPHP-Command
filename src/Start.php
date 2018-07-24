@@ -31,7 +31,7 @@ class Start extends Command
 
     public function handle()
     {
-        return true;
+        return [];
     }
 
     public function example()

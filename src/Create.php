@@ -23,24 +23,24 @@ class Create extends Command
     public function options()
     {
         return [
-            '-name  FileName',
-            '-type  Create type [controller,business,model,task,dao,bean]',
-            '-db    Database Config Name',
-            '-env   Environment',
-            '-force Overwrite old files',
-            '-hmvc  Hmvc Name',
+            '--name'  => 'FileName',
+            '--type'  => 'Create type [controller,business,model,task,dao,bean]',
+            '--db'    => 'Database Config Name',
+            '--env'   => 'Environment',
+            '--force' => 'Overwrite old files',
+            '--hmvc'  => 'Hmvc Name',
         ];
     }
 
     public function example()
     {
         return [
-            'create controller:   php zls artisan create:controller -name controllerName',
-            'create business:     php zls artisan create:business -name businessName',
-            'create task:         php zls artisan create:task -name taskName',
-            'create dao:          php zls artisan create:dao -name Zls -table tableName',
-            'create dao and bean: php zls artisan create:dao:bean -name Zls -table tableName',
-            '...',
+            'controller      php zls create controller --name {controllerName}',
+            'business        php zls create business --name {businessName}',
+            'task            php zls create task --name {taskName}',
+            'dao             php zls create dao --name {Zls} --table {tableName}',
+            'dao and bean    php zls create dao:bean -name {Zls} --table {tableName}',
+            '                ...',
         ];
     }
 
@@ -51,21 +51,24 @@ class Create extends Command
 
     private function getArgs($args, $type = '')
     {
-        $name = Z::arrayGet($args, 'name');
-        $type = $type ?: strtolower(z::arrayGet($args, 'type'));
+        $name = Z::arrayGet($args, ['name', '-name']);
+        $type = $type ?: strtolower(z::arrayGet($args, ['type', '-type']));
+        if(!$type){
+            $type = z::arrayGet($args, 2);
+        }
         if (empty($type)) {
-            $this->error('type required, please use : -type [controller,business,model,task,dao,bean]');
+            $this->error('type required, please use : --type [controller,business,model,task,dao,bean]');
             Z::finish();
         }
         if (empty($name)) {
-            $this->error('name required , please use -name FileName');
+            $this->error('name required , please use --name FileName');
             Z::finish();
         }
-        $force = Z::arrayGet($args, ['force', 'f']);
-        $style = Z::arrayGet($args, ['style']);
-        $table = Z::arrayGet($args, 'table');
-        $dbGroup = Z::arrayGet($args, ['db']);
-        $hmvc = Z::arrayGet($args, ['hmvc']);
+        $force = Z::arrayGet($args, ['force', 'f', '-force']);
+        $style = Z::arrayGet($args, ['style', '-style']);
+        $table = Z::arrayGet($args, ['table', '-table']);
+        $dbGroup = Z::arrayGet($args, ['db', '-db']);
+        $hmvc = Z::arrayGet($args, ['hmvc', '-hmvc']);
         $argc = [$name, $type, $table, $hmvc, $dbGroup, $force, $style];
 
         return ['name' => $name, 'type' => $type, 'table' => $table, 'hmvc' => $hmvc, 'db' => $dbGroup, 'force' => $force, 'style' => $style];
