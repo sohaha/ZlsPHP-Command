@@ -15,5 +15,7 @@
       "Zls\\Command\\": "src/"
     }
   },
-  "require": {}
+  "require": {
+    "zls/dao": "*"
+  }
 }
