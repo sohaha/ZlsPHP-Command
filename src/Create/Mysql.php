@@ -21,7 +21,7 @@ class Mysql
     public function creation($type, $table, $dbGroup)
     {
         if (empty($table) || !is_string($table)) {
-            $this->error('table name required, please use -table TableName');
+            $this->error('table name required, please use --table TableName');
             Z::finish();
         } else {
             $this->type = $type;
@@ -33,21 +33,19 @@ class Mysql
         }
     }
 
-    private function getTableFieldsInfo($tableName, $db)
+    public function getTableFieldsInfo($tableName, $db)
     {
         if (!is_object($db)) {
             $db = Z::db($db);
         }
         $type = strtolower($db->getDriverType());
         $info = [];
-        try {
-            if (method_exists($this, $type)) {
-                $info = $this->$type($tableName, $db);
-            }
-        } catch (\Exception $e) {
-            $this->error($e->getMessage());
-            Z::finish();
+        /*try {*/
+        if (method_exists($this, $type)) {
+            $info = $this->$type($tableName, $db);
         }
+
+        /*} catch (\Exception $e) {$this->error($e->getMessage());Z::finish();}*/
 
         return $info;
     }
@@ -89,6 +87,7 @@ class Mysql
         if ($type === 'dao') {
             $result['methods'] = [
                 'getColumns',
+                'getHideColumns',
                 'getPrimaryKey',
                 'getTable',
                 'getBean',
