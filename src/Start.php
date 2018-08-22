@@ -50,8 +50,8 @@ class Start extends Command
 
     public function execute($args)
     {
-        $port = z::arrayGet($args, ['-port', 'P', 3], 3780);
-        $ip = z::arrayGet($args, ['-host', 'I'], '127.0.0.1');
+        $port = z::arrayGet($args, ['-port', 'port', 'P', 3], 3780);
+        $ip = z::arrayGet($args, ['-host', 'host', 'I'], '127.0.0.1');
         if (z::arrayGet($args, ['-external', 'C'])) {
             $ip = '0.0.0.0';
         }

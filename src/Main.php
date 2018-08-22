@@ -15,8 +15,8 @@ class Main extends Command
     private $args = [];
 
     private $command = [
-        'set'    => '\Zls\Command\Set',
-        //'run'    => '\Zls\Command\Run',
+        //'set'    => '\Zls\Command\Set',
+        'run'    => '\Zls\Command\Run',
         'start'  => '\Zls\Command\Start',
         //'update' => '\Zls\Command\Update',
         'create' => '\Zls\Command\Create',
