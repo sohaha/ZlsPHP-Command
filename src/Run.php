@@ -54,13 +54,13 @@ class Run extends Command
 
     public function build()
     {
-        $packageName = 'zls';
-        $ext         = 'phar';
-        $time        = date('YmdHis', time());
-        $packageName = "{$packageName}.{$ext}";
-        $buildPath   = Z::realPathMkdir('build/', false, false, false);
+        $name        = 'zls';
+        $ext         = '.phar';
+        $time        = date('YmdHis');
+        $packageName = "{$name}{$ext}";
+        $buildPath   = Z::realPathMkdir('build/', true, false, false);
         $path        = ZLS_PATH.'../';
-        $pharPath    = $path.$time.$packageName;
+        $pharPath    = $buildPath.$packageName;
         try {
             $phar = new \Phar(
                 $pharPath,
@@ -69,7 +69,7 @@ class Run extends Command
             );
             $phar->buildFromDirectory($path, '/\.php$/');
             $phar->buildFromDirectory($path, '/\.example$/');
-            $phar->compressFiles(Phar::GZ);
+            $phar->compressFiles(\Phar::GZ);
             $phar->stopBuffering();
             $webIndex
                 = "<?php
@@ -77,14 +77,18 @@ Phar::mapPhar('{$packageName}');
 define('ZLS_PATH', 'phar://{$packageName}/');
 define('ZLS_APP_PATH', 'phar://{$packageName}/application/');
 define('ZLS_STORAGE_PATH', './storage');
+var_dump(ZLS_APP_PATH);
 require 'phar://{$packageName}/public/index.php';
 __HALT_COMPILER();
-?>";
+";
             $phar->setStub(
                 $webIndex
             );
-            $this->success('build: '.$pharPath);
+            file_put_contents($buildPath.'index.php', "<?php
+require __DIR__.'/{$packageName}';");
+            $this->success('build -> '.z::realpath($pharPath));
         } catch (\Exception $e) {
+            z::rmdir($buildPath);
             $this->error($e->getMessage());
         }
     }

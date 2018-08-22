@@ -6,6 +6,7 @@ use Z;
 
 /**
  * 本地服务器
+ *
  * @author        影浅
  * @email         seekwe@gmail.com
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
@@ -51,23 +52,26 @@ class Start extends Command
     public function execute($args)
     {
         $port = z::arrayGet($args, ['-port', 'port', 'P', 3], 3780);
-        $ip = z::arrayGet($args, ['-host', 'host', 'I'], '127.0.0.1');
+        $ip   = z::arrayGet($args, ['-host', 'host', 'I'], '127.0.0.1');
         if (z::arrayGet($args, ['-external', 'C'])) {
             $ip = '0.0.0.0';
         }
-        $url = $ip . ':' . $port;
-        $cmd = z::phpPath() . ' -S ' . $url . ' -t ' . z::realPath(ZLS_PATH);
-        if (file_exists($filePath = __DIR__ . '/Start/StartRun.php')) {
-            $cmd .= ' -file ' . $filePath;
+        $url     = $ip.':'.$port;
+        $zlsPath = z::realPath(ZLS_PATH);
+        $cmd     = z::phpPath().' -S '.$url.' -t '.(z::strBeginsWith($zlsPath,
+                'phar://') ? getcwd() : $zlsPath);
+        if (file_exists($filePath = __DIR__.'/Start/StartRun.php')) {
+            $cmd .= ' -file '.$filePath;
         }
         if ($ip === '0.0.0.0') {
-            $url = z::serverIp() . ':' . $port;
+            $url = z::serverIp().':'.$port;
         }
-        echo $this->printStrN("HttpServe: http://{$url}", 'white', 'red') . PHP_EOL;
+        echo $this->printStrN("HttpServe: http://{$url}", 'white', 'red')
+            .PHP_EOL;
         try {
             echo z::command($cmd);
         } catch (\Zls_Exception_500 $e) {
-            echo $e->getMessage() . PHP_EOL;
+            echo $e->getMessage().PHP_EOL;
         }
     }
 }
