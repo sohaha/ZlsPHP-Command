@@ -5,11 +5,14 @@ namespace Zls\Command;
 use Z;
 
 /**
- * 更新
+ * 更新.
+ *
  * @author        影浅
  * @email         seekwe@gmail.com
+ *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @link          ---
+ *
+ * @see          ---
  * @since         v0.0.1
  * @updatetime    2018-02-01 15:01
  */
@@ -32,7 +35,7 @@ class Update extends Command
     {
         return [
             'self' => 'Update Framework',
-            'log'  => 'Check the update log, do not update',
+            'log' => 'Check the update log, do not update',
         ];
     }
 
@@ -50,7 +53,7 @@ class Update extends Command
     {
         $version = IN_ZLS;
         /**
-         * @var \Zls\Action\Http $ActionHttp
+         * @var \Zls\Action\Http
          */
         $ActionHttp = z::extension('Action\Http');
         $updateLog = $ActionHttp->get(self::LOG_URL, null, null, 1);
@@ -60,7 +63,7 @@ class Update extends Command
         });
         if ($updateLog) {
             $this->download();
-            $log = ['Update Log' . PHP_EOL];
+            $log = ['Update Log'.PHP_EOL];
             foreach ($updateLog as $v => $t) {
                 $this->printStrN("v{$v}:", 'white');
                 $this->printStrN($t, 'light_gray');
@@ -74,11 +77,11 @@ class Update extends Command
     protected function download()
     {
         /**
-         * @var \Zls\Action\Http $ActionHttp
+         * @var \Zls\Action\Http
          */
         $ActionHttp = z::extension('Action\Http');
         $content = $ActionHttp->get(self::FRAMEWORK_URL, null, null, 1);
-        $savePath = z::tempPath() . '/Zls.php';
+        $savePath = z::tempPath().'/Zls.php';
         if (strlen($content) > 500 && @file_put_contents($savePath, $content)) {
             rename($savePath, ZLS_FRAMEWORK);
         }

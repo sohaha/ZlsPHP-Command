@@ -5,12 +5,14 @@ namespace Zls\Command;
 use Z;
 
 /**
- * 本地服务器
+ * 本地服务器.
  *
  * @author        影浅
  * @email         seekwe@gmail.com
+ *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @link          ---
+ *
+ * @see           ---
  * @since         v0.0.1
  * @updatetime    2018-02-01 15:01
  */
@@ -26,7 +28,7 @@ class Start extends Command
         return [
             '-I, -i, --host <host>' => 'Listening IP',
             '-P, -p, --port <port>' => 'Listening Port',
-            '-C,     --external'    => 'Open extranet access and ignore the --host setting',
+            '-C,     --external' => 'Open extranet access and ignore the --host setting',
         ];
     }
 
@@ -39,7 +41,7 @@ class Start extends Command
     {
         return [
             ' --host 0.0.0.0' => 'To make the network access',
-            ' -P 8080'        => 'Listening 8080 Port',
+            ' -P 8080' => 'Listening 8080 Port',
         ];
     }
 
@@ -51,27 +53,45 @@ class Start extends Command
 
     public function execute($args)
     {
-        $port = z::arrayGet($args, ['-port', 'port', 'P', 3], 3780);
-        $ip   = z::arrayGet($args, ['-host', 'host', 'I'], '127.0.0.1');
-        if (z::arrayGet($args, ['-external', 'C'])) {
-            $ip = '0.0.0.0';
+        $port = (int) z::arrayGet($args, ['-port', 'port', 'P', 3], 3780);
+        $host = z::arrayGet($args, ['-host', 'host', 'I'], '127.0.0.1');
+        $newPort = $this->checkPortBindable($host, $port);
+        if ($port !== $newPort) {
+            $this->printStrN("Warn Port {$port} has been used, switched to {$newPort}.",
+                'yellow');
+            $port = $newPort;
         }
-        $url     = $ip.':'.$port;
+        if (z::arrayGet($args, ['-external', 'C'])) {
+            $host = '0.0.0.0';
+        }
+        $url = $host.':'.$port;
         $zlsPath = z::realPath(ZLS_PATH);
-        $cmd     = z::phpPath().' -S '.$url.' -t '.(z::strBeginsWith($zlsPath,
+        $cmd = z::phpPath().' -S '.$url.' -t '.(z::strBeginsWith($zlsPath,
                 'phar://') ? getcwd() : $zlsPath);
         if (file_exists($filePath = __DIR__.'/Start/StartRun.php')) {
             $cmd .= ' -file '.$filePath;
         }
-        if ($ip === '0.0.0.0') {
+        if ('0.0.0.0' === $host) {
             $url = z::serverIp().':'.$port;
         }
-        echo $this->printStrN("HttpServe: http://{$url}", 'white', 'red')
-            .PHP_EOL;
+        $this->printStrN($this->color(' Local ', 'white', 'blue')." http://{$url}", 'white');
         try {
             echo z::command($cmd);
         } catch (\Zls_Exception_500 $e) {
             echo $e->getMessage().PHP_EOL;
         }
+    }
+
+    private function checkPortBindable($host, $port)
+    {
+        $socket = @stream_socket_server("tcp://{$host}:{$port}");
+        if (!$socket) {
+            ++$port;
+
+            return $this->checkPortBindable($host, $port);
+        }
+        @fclose($socket);
+
+        return $port;
     }
 }

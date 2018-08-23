@@ -5,7 +5,8 @@ namespace Zls\Command;
 use z;
 
 /**
- * Create
+ * Create.
+ *
  * @author        影浅-Seekwe
  * @email       seekwe@gmail.com
  * @updatetime    2017-2-27 16:52:51
@@ -23,12 +24,12 @@ class Create extends Command
     public function options()
     {
         return [
-            '--name'  => 'FileName',
-            '--type'  => 'Create type [controller,business,model,task,dao,bean]',
-            '--db'    => 'Database Config Name',
-            '--env'   => 'Environment',
+            '--name' => 'FileName',
+            '--type' => 'Create type [controller,business,model,task,dao,bean]',
+            '--db' => 'Database Config Name',
+            '--env' => 'Environment',
             '--force' => 'Overwrite old files',
-            '--hmvc'  => 'Hmvc Name',
+            '--hmvc' => 'Hmvc Name',
         ];
     }
 
@@ -53,7 +54,7 @@ class Create extends Command
     {
         $name = Z::arrayGet($args, ['name', '-name']);
         $type = $type ?: strtolower(z::arrayGet($args, ['type', '-type']));
-        if(!$type){
+        if (!$type) {
             $type = z::arrayGet($args, 2);
         }
         if (empty($type)) {

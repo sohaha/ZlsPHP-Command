@@ -5,11 +5,14 @@ namespace Zls\Command;
 use Z;
 
 /**
- * 设置
+ * 设置.
+ *
  * @author        影浅
  * @email         seekwe@gmail.com
+ *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @link          ---
+ *
+ * @see          ---
  * @since         v0.0.1
  * @updatetime    2018-02-01 15:01
  */
@@ -39,7 +42,6 @@ class Set extends Command
         ];
     }
 
-
     public function execute($args)
     {
         $method = z::arrayGet($args, ['type', 2]);
@@ -54,19 +56,19 @@ class Set extends Command
     {
         z::command('composer dump-autoload --optimize');
         /**
-         * @var \Zls\Action\Ini $Ini
+         * @var \Zls\Action\Ini
          */
         $Ini = z::extension('Action\Ini');
         $config = z::config('ini');
         $config = z::arrayMap($config, function ($v) {
             $config = [];
             foreach ($v as $k => $vv) {
-                $config[$k] = ($k === 'debug') ? 0 : $vv;
+                $config[$k] = ('debug' === $k) ? 0 : $vv;
             }
 
             return $config;
         });
-        $status = @file_put_contents(ZLS_PATH . '../zls.ini', $Ini->extended($config));
+        $status = @file_put_contents(ZLS_PATH.'../zls.ini', $Ini->extended($config));
         $this->printStrN('Modify zls.ini success', 'green');
     }
 }

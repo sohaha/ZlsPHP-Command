@@ -6,7 +6,8 @@ use Z;
 use Zls\Command\Utils;
 
 /**
- * Zls_Command_Create_Mysql
+ * Zls_Command_Create_Mysql.
+ *
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
  * @updatetime    2017-5-31 12:11:36
@@ -51,22 +52,23 @@ class Mysql
     }
 
     /**
-     * @param  string                    $tableName
+     * @param string                     $tableName
      * @param \Zls_Database_ActiveRecord $db
+     *
      * @return array
      */
     public function sqlsrv($tableName, $db)
     {
         $info = [];
-        $result = $db->execute('SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\'' . $db->getTablePrefix() . $tableName . '\'')->rows();
-        $primary = $db->execute('EXEC sp_pkeys @table_name=\'' . $db->getTablePrefix() . $tableName . '\'')->value('COLUMN_NAME');
+        $result = $db->execute('SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\''.$db->getTablePrefix().$tableName.'\'')->rows();
+        $primary = $db->execute('EXEC sp_pkeys @table_name=\''.$db->getTablePrefix().$tableName.'\'')->value('COLUMN_NAME');
         if ($result) {
             foreach ($result as $val) {
                 $info[$val['COLUMN_NAME']] = [
-                    'name'    => $val['COLUMN_NAME'],
-                    'type'    => $val['DATA_TYPE'],
-                    'comment' => $val['COLUMN_NAME'],//注释
-                    'notnull' => $val['IS_NULLABLE'] == 'NO' ? 1 : 0,
+                    'name' => $val['COLUMN_NAME'],
+                    'type' => $val['DATA_TYPE'],
+                    'comment' => $val['COLUMN_NAME'], //注释
+                    'notnull' => 'NO' == $val['IS_NULLABLE'] ? 1 : 0,
                     'default' => $val['COLUMN_DEFAULT'],
                     'primary' => (strtolower($val['COLUMN_NAME']) === strtolower($primary)),
                     'autoinc' => (strtolower($val['COLUMN_NAME']) === strtolower($primary)),
@@ -81,10 +83,10 @@ class Mysql
     {
         $type = $this->type;
         $columns = $this->getTableFieldsInfo($this->table, $this->dbGroup);
-        $result['code'] = '    ' . $this->$type($columns, $this->table) . \PHP_EOL;
+        $result['code'] = '    '.$this->$type($columns, $this->table).\PHP_EOL;
         $result['methods'] = [];
         $result['args'] = [];
-        if ($type === 'dao') {
+        if ('dao' === $type) {
             $result['methods'] = [
                 'getColumns',
                 'getHideColumns',
@@ -94,8 +96,8 @@ class Mysql
             ];
         } else {
             foreach ($columns as $column) {
-                $result['methods'][] = 'get' . z::strSnake2Camel($column['name']);
-                $result['methods'][] = 'set' . z::strSnake2Camel($column['name']);
+                $result['methods'][] = 'get'.z::strSnake2Camel($column['name']);
+                $result['methods'][] = 'set'.z::strSnake2Camel($column['name']);
             }
         }
 
@@ -105,22 +107,23 @@ class Mysql
     /**
      * @param string                     $tableName
      * @param \Zls_Database_ActiveRecord $db
+     *
      * @return array
      */
     private function mysql($tableName, $db)
     {
         $info = [];
-        $result = $db->execute('SHOW FULL COLUMNS FROM ' . $db->getTablePrefix() . $tableName)->rows();
+        $result = $db->execute('SHOW FULL COLUMNS FROM '.$db->getTablePrefix().$tableName)->rows();
         if ($result) {
             foreach ($result as $val) {
                 $info[$val['Field']] = [
-                    'name'    => $val['Field'],
-                    'type'    => $val['Type'],
+                    'name' => $val['Field'],
+                    'type' => $val['Type'],
                     'comment' => $val['Comment'] ? $val['Comment'] : $val['Field'],
-                    'notnull' => $val['Null'] == 'NO' ? 1 : 0,
+                    'notnull' => 'NO' == $val['Null'] ? 1 : 0,
                     'default' => $val['Default'],
-                    'primary' => (strtolower($val['Key']) == 'pri'),
-                    'autoinc' => (strtolower($val['Extra']) == 'auto_increment'),
+                    'primary' => ('pri' == strtolower($val['Key'])),
+                    'autoinc' => ('auto_increment' == strtolower($val['Extra'])),
                 ];
             }
         }
@@ -131,7 +134,7 @@ class Mysql
     private function dao($columns, $table)
     {
         /**
-         * @var \Zls\Dao\Create $DaoCreate
+         * @var \Zls\Dao\Create
          */
         $DaoCreate = z::extension('Dao\Create');
 
@@ -140,9 +143,8 @@ class Mysql
 
     private function bean($columns)
     {
-
         /**
-         * @var \Zls\Dao\Create $DaoCreate
+         * @var \Zls\Dao\Create
          */
         $DaoCreate = z::extension('Dao\Create');
 

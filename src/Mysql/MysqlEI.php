@@ -6,11 +6,14 @@ use Z;
 use Zls\Command\Utils;
 
 /**
- * mysql导出导入
+ * mysql导出导入.
+ *
  * @author        影浅
  * @email         seekwe@gmail.com
+ *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @link          ---
+ *
+ * @see          ---
  * @since         v0.0.1
  * @updatetime    2018-03-02 15:58
  */
@@ -18,9 +21,9 @@ class MysqlEI
 {
     use Utils;
     //换行符
-    public $sqlContent = "";
+    public $sqlContent = '';
     //存储SQL的变量
-    public $sqlEnd = ";";
+    public $sqlEnd = ';';
     //每条sql语句的结尾符
     private $ds = "\n";
     private $db;
@@ -33,7 +36,9 @@ class MysqlEI
 
     /**
      * MysqlEI constructor.
+     *
      * @param string $group
+     *
      * @throws \Zls_Exception_Database
      */
     public function __construct($group = '')
@@ -45,12 +50,13 @@ class MysqlEI
             return end($master);
         });
         $this->host = z::arrayGet($master, 'hostname');
-        $this->version = $this->db->execute("select VERSION() as version")->value('version');
+        $this->version = $this->db->execute('select VERSION() as version')->value('version');
         $this->db->pod()->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_NATURAL);
     }
 
     /**
-     * 导出数据
+     * 导出数据.
+     *
      * @param string $tablename
      * @param string $dir
      * @param string $prefix
@@ -58,11 +64,12 @@ class MysqlEI
      * @param array  $includeData
      * @param string $name
      * @param int    $size
+     *
      * @return bool|string
      */
     public function export($tablename = '', $dir = '', $prefix = '', $ignoreData = [], array $includeData = [], $name = '', $size = 1024)
     {
-        if ($dir !== false) {
+        if (false !== $dir) {
             $dir = $dir ? $dir : z::realPathMkdir('../database', true);
             if (!z::strEndsWith($dir, '/')) {
                 $dir .= '/';
@@ -73,28 +80,28 @@ class MysqlEI
         $p = 1;
         $thanSize = function (&$_sql, &$p, $filename) use ($size, $dir) {
             if (strlen($_sql) >= $size * 1024) {
-                $file = $filename . "_v" . $p . ".sql";
+                $file = $filename.'_v'.$p.'.sql';
                 $res = $this->writeFile($_sql, $file, $dir);
-                if ($res === true) {
-                    $volume = $p === 1 ? '' : 'volume-' . $p . ' ';
+                if (true === $res) {
+                    $volume = 1 === $p ? '' : 'volume-'.$p.' ';
                     $this->printStrN("{$volume}backup completed.", 'light_green');
                     $this->printStrN("Generate a backup file {$file}.", 'cyan');
                 } else {
-                    $this->error('Exception', "volume-" . $p . " backup error:" . $res);
+                    $this->error('Exception', 'volume-'.$p.' backup error:'.$res);
                     Z::finish();
                 }
-                $p++;
-                $_sql = "";
+                ++$p;
+                $_sql = '';
             }
         };
         $tablePrefix = $this->config['tablePrefix'];
         if (!empty($tablename)) {
             $tables = z::arrayMap(explode(',', $tablename), function ($name) use ($tablePrefix) {
-                return ['Name' => $tablePrefix . $name];
+                return ['Name' => $tablePrefix.$name];
             });
-            $filename = $prefix . date('YmdHis') . "_{$tablename}";
+            $filename = $prefix.date('YmdHis')."_{$tablename}";
         } else {
-            $filename = $prefix . date('YmdHis') . "_all";
+            $filename = $prefix.date('YmdHis').'_all';
             //查出所有表
             $tables = $this->allTable();
             z::throwIf(!$tables, 'Exception', "database {$this->database} read failed");
@@ -114,26 +121,25 @@ class MysqlEI
                 $isIgnore = z::arrayGet($ignoreData, str_replace($tablePrefix, '', $tablename), null);
                 if (is_null($isIgnore) && is_array($ignoreData)) {
                     foreach ($ignoreData as $v) {
-                        if ($tablePrefix . $v === $tablename) {
+                        if ($tablePrefix.$v === $tablename) {
                             $isIgnore = false;
                             break;
                         }
                     }
                 }
-                $isIgnoreTable = $isIgnore === true;
-                $isIgnoreData = $isIgnore === false;
+                $isIgnoreTable = true === $isIgnore;
+                $isIgnoreData = false === $isIgnore;
             }
-            if (!$isInclud && ($isIgnoreTable || (!!$tablePrefix && !z::strBeginsWith($table['Name'], $tablePrefix)))) {
+            if (!$isInclud && ($isIgnoreTable || ((bool) $tablePrefix && !z::strBeginsWith($table['Name'], $tablePrefix)))) {
                 continue;
             }
             $sql .= $this->insertTableStructure($tablename, $isIgnoreData);
             if (!$isIgnoreData) {
-
                 $this->db->setTablePrefix($isInclud ? '' : $tablePrefix);
                 $total = $this->db->select('count(*) as total')->from($tablename)->execute()->value('total');
                 $pagesize = 200;
                 $pages = Z::page($total, 1, $pagesize, '{page}');
-                for ($page = 1; $page <= $pages['count']; $page++) {
+                for ($page = 1; $page <= $pages['count']; ++$page) {
                     $items = $this->db->select('*')->limit(($page - 1) * $pagesize, $pagesize)->from($tablename)->execute()->rows();
                     foreach ($items as $k => $record) {
                         $sql .= $this->insertRecord($tablename, $k, $record);
@@ -145,16 +151,16 @@ class MysqlEI
                 $thanSize($sql, $p, $filename);
             }
         }
-        if ($dir && $sql != "") {
-            $filename .= "_v" . $p . ".sql";
+        if ($dir && '' != $sql) {
+            $filename .= '_v'.$p.'.sql';
             $res = $this->writeFile($sql, $filename, $dir);
-            if ($res === true) {
-                $filename = z::realPath($dir . $filename);
-                $volume = $p === 1 ? '' : 'volume-' . $p . ' ';
+            if (true === $res) {
+                $filename = z::realPath($dir.$filename);
+                $volume = 1 === $p ? '' : 'volume-'.$p.' ';
                 $this->printStrN("{$volume}backup completed.", 'light_green');
                 $this->printStrN("Generate a backup file {$filename}.", 'cyan');
             } else {
-                z::throwIf(true, 'Exception', "volume-" . $p . " backup error:" . $res);
+                z::throwIf(true, 'Exception', 'volume-'.$p.' backup error:'.$res);
             }
         }
 
@@ -162,49 +168,52 @@ class MysqlEI
     }
 
     /**
-     * 插入数据库备份基础信息
+     * 插入数据库备份基础信息.
+     *
      * @return string
      */
     private function retrieve()
     {
         $value = '';
-        $value .= '--' . $this->ds;
-        $value .= '-- MySQL database dump' . $this->ds;
-        $value .= '-- Created by Zls\Util\Mysql class, Power By ZlsPHP. ' . $this->ds;
-        $value .= '-- https://docs.73zls.com/zls-php/#/ ' . $this->ds;
-        $value .= '--' . $this->ds;
-        $value .= '-- 主机: ' . $this->host . $this->ds;
-        $value .= '-- 生成日期: ' . date('Y') . ' 年  ' . date('m') . ' 月 ' . date('d') . ' 日 ' . date('H:i') . $this->ds;
-        $value .= '-- MySQL版本: ' . $this->version . $this->ds;
-        $value .= '-- PHP 版本: ' . phpversion() . $this->ds;
+        $value .= '--'.$this->ds;
+        $value .= '-- MySQL database dump'.$this->ds;
+        $value .= '-- Created by Zls\Util\Mysql class, Power By ZlsPHP. '.$this->ds;
+        $value .= '-- https://docs.73zls.com/zls-php/#/ '.$this->ds;
+        $value .= '--'.$this->ds;
+        $value .= '-- 主机: '.$this->host.$this->ds;
+        $value .= '-- 生成日期: '.date('Y').' 年  '.date('m').' 月 '.date('d').' 日 '.date('H:i').$this->ds;
+        $value .= '-- MySQL版本: '.$this->version.$this->ds;
+        $value .= '-- PHP 版本: '.phpversion().$this->ds;
         $value .= $this->ds;
-        $value .= '--' . $this->ds;
-        $value .= '-- 数据库: `' . $this->database . '`' . $this->ds;
-        $value .= '--' . $this->ds . $this->ds;
+        $value .= '--'.$this->ds;
+        $value .= '-- 数据库: `'.$this->database.'`'.$this->ds;
+        $value .= '--'.$this->ds.$this->ds;
         $value .= '-- -------------------------------------------------------';
-        $value .= $this->ds . $this->ds;
+        $value .= $this->ds.$this->ds;
 
         return $value;
     }
 
     /**
-     * 写入文件
+     * 写入文件.
+     *
      * @param string $sql
      * @param string $filename
      * @param string $dir
-     * @return boolean
+     *
+     * @return bool
      */
     private function writeFile($sql, $filename, $dir)
     {
         $re = true;
-        if (!@$fp = fopen($dir . $filename, "w+")) {
-            $re = "fail to open the file";
+        if (!@$fp = fopen($dir.$filename, 'w+')) {
+            $re = 'fail to open the file';
         }
         if (!@fwrite($fp, $sql)) {
-            $re = "Failed to write file, please file is writable";
+            $re = 'Failed to write file, please file is writable';
         }
         if (!@fclose($fp)) {
-            $re = "Failed to close file";
+            $re = 'Failed to close file';
         }
 
         return $re;
@@ -212,63 +221,66 @@ class MysqlEI
 
     public function allTable()
     {
-        return $this->db->execute("show table status from " . $this->database)->rows();
+        return $this->db->execute('show table status from '.$this->database)->rows();
     }
 
     /**
-     * 表结构
+     * 表结构.
+     *
      * @param string $table
      * @param bool   $autoIncrement
+     *
      * @return string
      */
     private function insertTableStructure($table, $autoIncrement = false)
     {
         $sql = '';
-        $sql .= "--" . $this->ds;
-        $sql .= "-- 表的结构" . $table . $this->ds;
-        $sql .= "--" . $this->ds . $this->ds;
+        $sql .= '--'.$this->ds;
+        $sql .= '-- 表的结构'.$table.$this->ds;
+        $sql .= '--'.$this->ds.$this->ds;
         $sql .=
-            /** @lang text */
-            'DROP TABLE IF EXISTS `' . $table . '`' . $this->sqlEnd . $this->ds;
-        $row = $this->db->execute('SHOW CREATE TABLE `' . $table . '`')->row();
-        $sql .= ($autoIncrement) ? preg_replace('/AUTO_INCREMENT=\d+/i', 'AUTO_INCREMENT=1', $row ['Create Table']) : $row ['Create Table'];
-        $sql .= $this->sqlEnd . $this->ds;
+            /* @lang text */
+            'DROP TABLE IF EXISTS `'.$table.'`'.$this->sqlEnd.$this->ds;
+        $row = $this->db->execute('SHOW CREATE TABLE `'.$table.'`')->row();
+        $sql .= ($autoIncrement) ? preg_replace('/AUTO_INCREMENT=\d+/i', 'AUTO_INCREMENT=1', $row['Create Table']) : $row['Create Table'];
+        $sql .= $this->sqlEnd.$this->ds;
         $sql .= $this->ds;
-        $sql .= "--" . $this->ds;
-        $sql .= "-- 转存表中的数据 " . $table . $this->ds;
-        $sql .= "--" . $this->ds;
+        $sql .= '--'.$this->ds;
+        $sql .= '-- 转存表中的数据 '.$table.$this->ds;
+        $sql .= '--'.$this->ds;
         $sql .= $this->ds;
 
         return $sql;
     }
 
-
     /**
-     * 单条记录
+     * 单条记录.
+     *
      * @param string $table
      * @param int    $i
      * @param array  $record
+     *
      * @return string
      */
     private function insertRecord($table, $i, $record)
     {
-        $comma = "";
+        $comma = '';
         $insert =
-            /** @lang text */
-            "INSERT INTO `" . $table . "` VALUES(";
+            /* @lang text */
+            'INSERT INTO `'.$table.'` VALUES(';
         foreach ($record as $k => $v) {
             $value = $v;
-            if ($value !== null) {
+            if (null !== $value) {
                 $value = str_replace("\n", '\n', $v);
                 $value = str_replace("\t", '\t', $value);
                 $value = str_replace("\r", '\r', $value);
-                $insert .= ($comma . "'" . $value . "'");
+                $insert .= ($comma."'".$value."'");
             } else {
-                $insert .= ($comma . "null");
+                $insert .= ($comma.'null');
             }
-            $comma = ",";
+            $comma = ',';
         }
-        $insert .= ");" . $this->ds;
+        $insert .= ');'.$this->ds;
 
         return $insert;
     }
@@ -276,89 +288,91 @@ class MysqlEI
     /**
      * 导入备份数据
      * 说明：分卷文件格式xxxx_all_v1.sql
-     * 参数：文件路径(必填)
+     * 参数：文件路径(必填).
+     *
      * @param string     $sqlfile
      * @param array|null $tablePrefix
-     * @return void
      */
     public function import($sqlfile, $tablePrefix = null)
     {
         z::throwIf(!file_exists($sqlfile), 500, 'Database backup does not exist! Please check');
         $sqlpath = pathinfo($sqlfile);
-        $this->sqldir = $sqlpath ['dirname'];
-        $volume = explode("_v", $sqlfile);
-        $volume_path = $volume [0];
-        $this->printStrN("Import backup data");
-        if (empty($volume [1])) {
-            $this->printStrN('Import sql：' . $sqlfile);
+        $this->sqldir = $sqlpath['dirname'];
+        $volume = explode('_v', $sqlfile);
+        $volume_path = $volume[0];
+        $this->printStrN('Import backup data');
+        if (empty($volume[1])) {
+            $this->printStrN('Import sql：'.$sqlfile);
             z::throwIf(!$this->_import($sqlfile, $tablePrefix), 'Exception', 'Database import failed');
             $this->success('Database import successful');
         } else {
-            $volume_id = explode(".sq", $volume [1]);
-            $volume_id = intval($volume_id [0]);
+            $volume_id = explode('.sq', $volume[1]);
+            $volume_id = intval($volume_id[0]);
             while ($volume_id) {
-                $tmpfile = $volume_path . "_v" . $volume_id . ".sql";
+                $tmpfile = $volume_path.'_v'.$volume_id.'.sql';
                 if (file_exists($tmpfile)) {
                     $basename = pathinfo($tmpfile, PATHINFO_BASENAME);
                     $this->printStrN("Import volumes-{$volume_id}: {$basename}");
-                    z::throwIf(!$this->_import($tmpfile, $tablePrefix), 'Exception', "Import volumes{$volume_id}：" . $tmpfile . ' error! It may be that the database structure is damaged! , Please try to import from volume 1');
+                    z::throwIf(!$this->_import($tmpfile, $tablePrefix), 'Exception', "Import volumes{$volume_id}：".$tmpfile.' error! It may be that the database structure is damaged! , Please try to import from volume 1');
                 } else {
                     $this->printStrN();
-                    $this->success("This backup of all volumes was successfully imported");
+                    $this->success('This backup of all volumes was successfully imported');
                     break;
                 }
-                $volume_id++;
+                ++$volume_id;
             }
         }
     }
 
     /**
-     * 将sql导入到数据库（普通导入）
+     * 将sql导入到数据库（普通导入）.
+     *
      * @param string $sqlfile
      * @param string $tablePrefix
-     * @return boolean
+     *
+     * @return bool
      */
     private function _import($sqlfile, $tablePrefix = null)
     {
         if (file_exists($sqlfile)) {
             $sqls = [];
-            $f = fopen($sqlfile, "rb");
+            $f = fopen($sqlfile, 'rb');
             $i = 0;
             $create = '';
             while (!feof($f)) {
-                $i++;
+                ++$i;
                 $line = fgets($f);
-                if (trim($line) == '' || preg_match('/--(.?)/', $line, $match)) {
+                if ('' == trim($line) || preg_match('/--(.?)/', $line, $match)) {
                     continue;
                 }
                 if (!preg_match('/;/', $line, $match) || preg_match('/ENGINE=/', $line, $match)) {
                     $create .= $line;
                     if (preg_match('/ENGINE=/', $create, $match)) {
-                        $sqls [] = $create;
+                        $sqls[] = $create;
                         $create = '';
                     }
                     continue;
                 }
-                $sqls [] = $line;
+                $sqls[] = $line;
             }
             fclose($f);
             $count = count($sqls);
             foreach ($sqls as $i => $sql) {
-                if (!!$tablePrefix) {
+                if ((bool) $tablePrefix) {
                     $sql = str_replace(
-                    /** @lang text */
+                    /* @lang text */
                         "INSERT INTO `{$tablePrefix[0]}",
-                        /** @lang text */
+                        /* @lang text */
                         "INSERT INTO `{$tablePrefix[1]}", $sql);
                     $sql = str_replace(
-                    /** @lang text */
+                    /* @lang text */
                         "CREATE TABLE `{$tablePrefix[0]}",
-                        /** @lang text */
+                        /* @lang text */
                         "CREATE TABLE `{$tablePrefix[1]}", $sql);
                     $sql = str_replace(
-                    /** @lang text */
+                    /* @lang text */
                         "DROP TABLE IF EXISTS `{$tablePrefix[0]}",
-                        /** @lang text */
+                        /* @lang text */
                         "DROP TABLE IF EXISTS `{$tablePrefix[1]}", $sql);
                 }
                 $this->progress(($i / $count) * 100, 'Importing: ', '', '', '');
@@ -376,11 +390,12 @@ class MysqlEI
     /**
      * @param        $tablename
      * @param string $op
+     *
      * @return bool
      */
-    private function lock($tablename, $op = "WRITE")
+    private function lock($tablename, $op = 'WRITE')
     {
-        if ($this->db->execute("lock tables " . $tablename . " " . $op)) {
+        if ($this->db->execute('lock tables '.$tablename.' '.$op)) {
             return true;
         } else {
             return false;
@@ -392,7 +407,7 @@ class MysqlEI
      */
     private function unlock()
     {
-        if ($this->db->execute("unlock tables")) {
+        if ($this->db->execute('unlock tables')) {
             return true;
         } else {
             return false;
