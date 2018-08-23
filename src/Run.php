@@ -58,9 +58,9 @@ class Run extends Command
         if (!$file = Z::arrayGet($args, ['-file', 'F'])) {
             $this->error('Phar file cannot be empty');
         } else {
-            $phar = new \Phar(Z::realPath($file, false, false));
             $path = Z::realPathMkdir('extract', true, false, false);
             z::rmdir($path, false);
+            $phar = new \Phar(Z::realPath($file, false, false));
             $phar->extractTo($path);
             $this->success('extract -> '.$path);
         }
@@ -84,7 +84,7 @@ class Run extends Command
             );
             $exclude = '/^(?!(.*build|.*extract|.*storage))(.*)\.php$/i';
             $phar->buildFromDirectory($path, $exclude);
-            $phar->buildFromDirectory($path, '/\.example$/');
+            $phar->buildFromDirectory($path, '/^zls\.ini\.example$/');
             $phar->compressFiles(\Phar::GZ);
             $phar->stopBuffering();
             $webIndex
@@ -92,7 +92,7 @@ class Run extends Command
 Phar::mapPhar('{$packageName}');
 define('ZLS_PATH', 'phar://{$packageName}/');
 define('ZLS_APP_PATH', 'phar://{$packageName}/application/');
-define('ZLS_STORAGE_PATH', './storage');
+define('ZLS_STORAGE_PATH', getcwd().'/../storage/');
 require 'phar://{$packageName}/public/index.php';
 __HALT_COMPILER();
 ";
