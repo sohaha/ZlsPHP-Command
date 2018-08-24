@@ -31,7 +31,7 @@ class Update extends Command
         return [];
     }
 
-    public function handle()
+    public function commands()
     {
         return [
             'self' => 'Update Framework',

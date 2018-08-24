@@ -29,7 +29,7 @@ class Run extends Command
         ];
     }
 
-    public function handle()
+    public function commands()
     {
         return [
             ' release' => 'Optimize the formal environment configuration',

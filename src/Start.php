@@ -32,7 +32,7 @@ class Start extends Command
         ];
     }
 
-    public function handle()
+    public function commands()
     {
         return [];
     }

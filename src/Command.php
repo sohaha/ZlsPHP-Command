@@ -20,24 +20,24 @@ abstract class Command
         $command = $command
             ?: Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
         $options = static::options();
-        $handles = static::handle();
+        $handles = static::commands();
         if (true === $handles) {
             $handles = $this->getHandle();
         }
         $commandPrefix = z::arrayGet($args, 0);
-        $commandStr = $commandPrefix.' '.$this->color($command);
-        $usage = '';
-        $usage .= $handles ? $this->color(':{handle}', 'cyan') : '';
-        $usage .= $options ? $this->color(' [options ...]', 'dark_gray')
+        $commandStr    = $commandPrefix.' '.$this->color($command);
+        $usage         = '';
+        $usage         .= $handles ? $this->color(':{command}', 'cyan') : '';
+        $usage         .= $options ? $this->color(' [options ...]', 'dark_gray')
             : '';
-        $example = static::example();
+        $example       = static::example();
         $this->printStrN(static::description(), 'light_green');
         //$this->printStrN();
         //$this->printStrN('Usage:', 'yellow');
         //$this->printStrN('  '.$commandStr.$usage);
         if ($handles) {
             $this->printStrN();
-            $this->printStrN('Handle:', 'yellow');
+            $this->printStrN('Available commands:', 'yellow');
             foreach (
                 $this->beautify($handles, $command, 'cyan', ':') as $k => $v
             ) {
@@ -75,7 +75,7 @@ abstract class Command
      *
      * @return array
      */
-    public function handle()
+    public function commands()
     {
     }
 
@@ -110,7 +110,7 @@ abstract class Command
         $color = '',
         $pre = ' '
     ) {
-        $lists = [];
+        $lists   = [];
         $isAssoc = function ($array) {
             if (is_array($array)) {
                 $keys = array_keys($array);
@@ -120,9 +120,9 @@ abstract class Command
 
             return false;
         };
-        $is = $isAssoc($commands);
-        $maxLen = 10;
-        $_tmp = array_keys($commands);
+        $is      = $isAssoc($commands);
+        $maxLen  = 10;
+        $_tmp    = array_keys($commands);
         usort($_tmp, function ($e, $c) {
             return strlen($e) < strlen($c);
         });

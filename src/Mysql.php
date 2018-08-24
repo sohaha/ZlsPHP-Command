@@ -33,7 +33,7 @@ class Mysql extends Command
         return 'Mysql Backup And Restore';
     }
 
-    public function handle()
+    public function commands()
     {
         return [
             'import' => 'Import backup file',
