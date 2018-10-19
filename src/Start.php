@@ -6,12 +6,9 @@ use Z;
 
 /**
  * 本地服务器.
- *
  * @author        影浅
  * @email         seekwe@gmail.com
- *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- *
  * @see           ---
  * @since         v0.0.1
  * @updatetime    2018-02-01 15:01
@@ -53,42 +50,50 @@ class Start extends Command
 
     public function execute($args)
     {
-        $port = (int) z::arrayGet($args, ['-port', 'port', 'P', 3], 3780);
+        $port = (int)z::arrayGet($args, ['-port', 'port', 'P', 3], 3780);
         $host = z::arrayGet($args, ['-host', 'host', 'I'], '127.0.0.1');
         $newPort = $this->checkPortBindable($host, $port);
         if ($port !== $newPort) {
-            $this->printStrN("Warn Port {$port} has been used, switched to {$newPort}.",
-                'yellow');
+            $this->printStrN(
+                "Warn Port {$port} has been used, switched to {$newPort}.",
+                             'yellow'
+            );
             $port = $newPort;
         }
         if (z::arrayGet($args, ['-external', 'C'])) {
             $host = '0.0.0.0';
         }
-        $url = $host.':'.$port;
+        $url = $host . ':' . $port;
         $zlsPath = z::realPath(ZLS_PATH);
-        $cmd = z::phpPath().' -S '.$url.' -t '.(z::strBeginsWith($zlsPath,
-                'phar://') ? getcwd() : $zlsPath);
-        if (file_exists($filePath = __DIR__.'/Start/StartRun.php')) {
-            $cmd .= ' -file '.$filePath;
+        $cmd = z::phpPath() . ' -S ' . $url . ' -t ' . (z::strBeginsWith(
+            $zlsPath,
+                                                                         'phar://'
+        ) ? getcwd() : $zlsPath);
+        if (file_exists($filePath = __DIR__ . '/Start/StartRun.php')) {
+            $cmd .= ' -file ' . $filePath;
         }
         if ('0.0.0.0' === $host) {
-            $url = z::serverIp().':'.$port;
+            $url = z::serverIp() . ':' . $port;
         }
-        $this->printStrN($this->color(' Local ', 'white', 'blue')." http://{$url}", 'white');
+        $this->printStrN($this->color(' Local ', 'white', 'blue') . " http://{$url}", 'white');
         try {
             echo z::command($cmd);
         } catch (\Zls_Exception_500 $e) {
-            echo $e->getMessage().PHP_EOL;
+            echo $e->getMessage() . PHP_EOL;
         }
     }
 
-    private function checkPortBindable($host, $port)
+    private function checkPortBindable($host, $port, $numberOfRetries = 1000, $rawPort = null)
     {
+        if (is_null($rawPort)) {
+            $rawPort = $port;
+        }
         $socket = @stream_socket_server("tcp://{$host}:{$port}");
         if (!$socket) {
             ++$port;
+            --$numberOfRetries;
 
-            return $this->checkPortBindable($host, $port);
+            return $numberOfRetries >= 0 ? $this->checkPortBindable($host, $port, $numberOfRetries, $rawPort) : $rawPort;
         }
         @fclose($socket);
 
