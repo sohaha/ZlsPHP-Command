@@ -27,10 +27,10 @@ class Common
         $this->hmvc = $hmvc;
         /** @var \Zls_Config $config */
         $config = Z::config();
-        $classesDir = $config->getPrimaryApplicationDir().$config->getClassesDirName().'/';
+        $classesDir = $config->getPrimaryAppDir().$config->getClassesDirName().'/';
         $getHmvcModules = $config->getHmvcModules();
         if ($this->hmvc && $HmvcModules = Z::arrayGet($getHmvcModules, $this->hmvc)) {
-            $classesDir = $config->getPrimaryApplicationDir().$config->getHmvcDirName().'/'.$HmvcModules.'/'.$config->getClassesDirName().'/';
+            $classesDir = $config->getPrimaryAppDir().$config->getHmvcDirName().'/'.$HmvcModules.'/'.$config->getClassesDirName().'/';
         }
         switch ($type) {
             case 'controller':
