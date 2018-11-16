@@ -61,7 +61,7 @@ class Common
                 $info = [
                     'dir' => $config->getTaskDirName(),
                     'parentClass' => 'Zls_Task',
-                    'method' => "public function execute(\\Zls_CliArgs \$args)\n    {\n\n    }",
+                    'method' => "public function execute(\$args)\n    {\n\n    }",
                     'nameTip' => 'Task',
                 ];
                 break;
