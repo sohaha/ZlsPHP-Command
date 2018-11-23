@@ -6,7 +6,6 @@ use Z;
 
 /**
  * Command\Utils.
- *
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
  * @updatetime    2018-7-13 11:54:51
@@ -14,7 +13,7 @@ use Z;
 trait Utils
 {
     private $showColor;
-    private $colors = [];
+    private $colors   = [];
     private $bgColors = [];
 
     public function __construct()
@@ -74,10 +73,11 @@ trait Utils
         return $this->bgColors;
     }
 
-    final public function error($err, $color = 'red')
+    final public function warning($err, $color = 'dark_gray')
     {
-        $this->printStr('[ Error ]', 'white', 'red');
-        $this->printStrN(': '.$err, $color);
+
+        $this->printStr('[ warning ]', 'yellow');
+        $this->printStrN(': ' . $err, $color);
     }
 
     final public function printStr($str = '', $color = '', $bgColor = null)
@@ -90,14 +90,14 @@ trait Utils
         $colorStr = '';
         $colorStr .= $this->_color($color, $this->colors);
         $colorStr .= $this->_color($bgColor, $this->bgColors);
-        $colorStr .= $str.$this->_color(0, [0]);
+        $colorStr .= $str . $this->_color(0, [0]);
 
         return $colorStr;
     }
 
     final public function _color($color = '', array $colors = [])
     {
-        return ($this->showColor && isset($colors[$color])) ? "\033[".$colors[$color].'m' : '';
+        return ($this->showColor && isset($colors[$color])) ? "\033[" . $colors[$color] . 'm' : '';
     }
 
     final public function printStrN($str = '', $color = '', $bgColor = null)
@@ -106,13 +106,25 @@ trait Utils
         echo PHP_EOL;
     }
 
+    final public function error($err, $color = 'red')
+    {
+        $this->printStr('[ Error ]', 'white', 'red');
+        $this->printStrN(': ' . $err, $color);
+    }
+
     final public function success($msg, $color = 'green')
     {
         $this->printStr('[ Success ]', 'white', 'green');
-        $this->printStrN(': '.$msg, $color);
+        $this->printStrN(': ' . $msg, $color);
     }
 
-    final public function ask($question, $default = null, $canNull = false)
+    final public function input($question, $default = null, $canNull = false, callable $verification = null)
+    {
+        $question = $this->color('[ Inpit ]', 'light_cyan') . ': ' . $question;
+        $this->ask($question, $default, $canNull, $verification);
+    }
+
+    final public function ask($question, $default = null, $canNull = false, callable $verification = null)
     {
         $status = false;
         do {
@@ -126,6 +138,9 @@ trait Utils
             } elseif (is_string($canNull)) {
                 $question = $canNull;
             }
+            if ($status && $verification) {
+                $status = $verification($value);
+            }
         } while (!$status);
 
         return $value;
@@ -133,8 +148,8 @@ trait Utils
 
     final public function progress($i, $title = 'mprogress: ', $mprogressColor = '', $bgColor = '', $pad = ' ')
     {
-        $bgColor = $bgColor ? "\033[".z::arrayGet($this->bgColors, $bgColor, 'white').'m' : '';
-        $mprogressColor = $mprogressColor ? "\033[".z::arrayGet($this->colors, $mprogressColor, 'white').'m' : '';
+        $bgColor = $bgColor ? "\033[" . z::arrayGet($this->bgColors, $bgColor, 'white') . 'm' : '';
+        $mprogressColor = $mprogressColor ? "\033[" . z::arrayGet($this->colors, $mprogressColor, 'white') . 'm' : '';
         printf("{$title}{$bgColor}{$mprogressColor} %d%% %s\r\033[0m", $i, str_repeat($pad, $i));
     }
 
@@ -147,7 +162,7 @@ trait Utils
             if ($tip) {
                 $this->printStrN("{$tip}{$originFile} -> {$file}");
             }
-            $status = (bool) @copy($originFile, $file);
+            $status = (bool)@copy($originFile, $file);
         }
         if ($cb instanceof \Closure) {
             $cb($status);

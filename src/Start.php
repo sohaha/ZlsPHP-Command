@@ -44,7 +44,13 @@ class Start extends Command
 
     public function port()
     {
-        $port = $this->ask('端口: ', null, '请输入端口: ');
+        $port = $this->input('please enter the port: ', null, 'please enter the port: ', function ($port) {
+            return z::tap(z::checkValue($port, ['num']), function ($status) {
+                if (!$status) {
+                    $this->warning('Port can only be an integer');
+                }
+            });
+        });
         $this->execute(['-port' => $port]);
     }
 
@@ -54,10 +60,7 @@ class Start extends Command
         $host = z::arrayGet($args, ['-host', 'host', 'I'], '127.0.0.1');
         $newPort = $this->checkPortBindable($host, $port);
         if ($port !== $newPort) {
-            $this->printStrN(
-                "Warn Port {$port} has been used, switched to {$newPort}.",
-                             'yellow'
-            );
+            $this->warning("Port {$port} has been used, switched to {$newPort}.");
             $port = $newPort;
         }
         if (z::arrayGet($args, ['-external', 'C'])) {
@@ -65,10 +68,8 @@ class Start extends Command
         }
         $url = $host . ':' . $port;
         $zlsPath = z::realPath(ZLS_PATH);
-        $cmd = z::phpPath() . ' -S ' . $url . ' -t ' . (z::strBeginsWith(
-            $zlsPath,
-                                                                         'phar://'
-        ) ? getcwd() : $zlsPath);
+        $cmd = z::phpPath() . ' -S ' . $url . ' -t ' .
+            (z::strBeginsWith($zlsPath, 'phar://') ? getcwd() : $zlsPath);
         if (file_exists($filePath = __DIR__ . '/Start/StartRun.php')) {
             $cmd .= ' -file ' . $filePath;
         }
@@ -78,24 +79,22 @@ class Start extends Command
         $this->printStrN($this->color(' Local ', 'white', 'blue') . " http://{$url}", 'white');
         try {
             echo z::command($cmd);
-        } catch (\Zls_Exception_500 $e) {
+        } catch (\Exception $e) {
             echo $e->getMessage() . PHP_EOL;
         }
     }
 
-    private function checkPortBindable($host, $port, $numberOfRetries = 1000, $rawPort = null)
+    private function checkPortBindable($host, $port)
     {
-        if (is_null($rawPort)) {
-            $rawPort = $port;
-        }
         $socket = @stream_socket_server("tcp://{$host}:{$port}");
-        if (!$socket) {
+        if (is_null($socket)) {
+            $this->warning('If you need to check the port occupancy, Please Remove the [stream_socket_server] limit.');
+        } elseif (!$socket) {
+            @fclose($socket);
             ++$port;
-            --$numberOfRetries;
 
-            return $numberOfRetries >= 0 ? $this->checkPortBindable($host, $port, $numberOfRetries, $rawPort) : $rawPort;
+            return $this->checkPortBindable($host, $port);
         }
-        @fclose($socket);
 
         return $port;
     }
