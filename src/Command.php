@@ -24,12 +24,12 @@ abstract class Command
             $handles = $this->getHandle();
         }
         $commandPrefix = z::arrayGet($args, 0);
-        $commandStr = $commandPrefix . ' ' . $this->color($command);
-        $usage = '';
-        $usage .= $handles ? $this->color(':{command}', 'cyan') : '';
-        $usage .= $options ? $this->color(' [options ...]', 'dark_gray')
+        $commandStr    = $commandPrefix . ' ' . $this->color($command);
+        $usage         = '';
+        $usage         .= $handles ? $this->color(':{command}', 'cyan') : '';
+        $usage         .= $options ? $this->color(' [options ...]', 'dark_gray')
             : '';
-        $example = static::example();
+        $example       = static::example();
         $this->printStrN(static::description(), 'light_green');
         $commandOptions = [];
         if ($handles) {
@@ -66,7 +66,7 @@ abstract class Command
             $this->printStrN('Example:', 'yellow', '');
             foreach (
                 $this->beautify($example, z::arrayGet($args, 0) . ' ' . $command,
-                                'cyan', false) as $k => $v
+                    'cyan', false) as $k => $v
             ) {
                 $this->printStrN($v);
             }
@@ -90,7 +90,7 @@ abstract class Command
     final public function getHandle()
     {
         $keys = array_diff(get_class_methods($this),
-                           get_class_methods(__CLASS__));
+            get_class_methods(__CLASS__));
 
         return array_fill_keys($keys, '');
     }
@@ -112,7 +112,7 @@ abstract class Command
 
     final public function beautify($commands, $command = '', $color = '', $pre = ' ', &$deploy = null)
     {
-        $lists = [];
+        $lists   = [];
         $isAssoc = function ($array) {
             if (is_array($array)) {
                 $keys = array_keys($array);
@@ -122,9 +122,9 @@ abstract class Command
 
             return false;
         };
-        $is = $isAssoc($commands);
-        $maxLen = 10;
-        $_tmp = array_keys($commands);
+        $is      = $isAssoc($commands);
+        $maxLen  = 10;
+        $_tmp    = array_keys($commands);
         usort($_tmp, function ($e, $c) {
             return strlen($e) < strlen($c);
         });
@@ -145,7 +145,10 @@ abstract class Command
             if (is_array($value)) {
                 if ($m) {
                     $k = trim($cmd);
-                    $deploy [trim(z::strBeginsWith($k, ':') ? $command . $k : $k)] = $value[1];
+                    if (count($value) > 1) {
+                        $_k           = trim(z::strBeginsWith($k, ':') ? $command . $k : $k);
+                        $deploy [$_k] = $value[1];
+                    }
                 }
                 $value = $value[0];
             }
