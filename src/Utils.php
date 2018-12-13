@@ -13,7 +13,7 @@ use Z;
 trait Utils
 {
     private $showColor;
-    private $colors   = [];
+    private $colors = [];
     private $bgColors = [];
 
     public function __construct()
@@ -25,32 +25,32 @@ trait Utils
     {
         $this->showColor = $this->ansiColorsSupported();
         if ($this->showColor) {
-            $this->colors = [
-                'black' => '0;30',
-                'dark_gray' => '1;30',
-                'blue' => '0;34',
-                'light_blue' => '1;34',
-                'green' => '0;32',
-                'light_green' => '1;32',
-                'cyan' => '0;36',
-                'light_cyan' => '1;36',
-                'red' => '0;31',
-                'light_red' => '1;31',
-                'purple' => '0;35',
+            $this->colors   = [
+                'black'        => '0;30',
+                'dark_gray'    => '1;30',
+                'blue'         => '0;34',
+                'light_blue'   => '1;34',
+                'green'        => '0;32',
+                'light_green'  => '1;32',
+                'cyan'         => '0;36',
+                'light_cyan'   => '1;36',
+                'red'          => '0;31',
+                'light_red'    => '1;31',
+                'purple'       => '0;35',
                 'light_purple' => '1;35',
-                'brown' => '0;33',
-                'yellow' => '1;33',
-                'light_gray' => '0;37',
-                'white' => '1;37',
+                'brown'        => '0;33',
+                'yellow'       => '1;33',
+                'light_gray'   => '0;37',
+                'white'        => '1;37',
             ];
             $this->bgColors = [
-                'black' => '40',
-                'red' => '41',
-                'green' => '42',
-                'yellow' => '43',
-                'blue' => '44',
-                'magenta' => '45',
-                'cyan' => '46',
+                'black'      => '40',
+                'red'        => '41',
+                'green'      => '42',
+                'yellow'     => '43',
+                'blue'       => '44',
+                'magenta'    => '45',
+                'cyan'       => '46',
                 'light_gray' => '47',
             ];
         }
@@ -106,10 +106,14 @@ trait Utils
         echo PHP_EOL;
     }
 
-    final public function error($err, $color = 'red')
+    final public function error($err, $color = '', $end = false)
     {
+        if (!$color) {
+            $color = 'red';
+        }
         $this->printStr('[ Error ]', 'white', 'red');
         $this->printStrN(': ' . $err, $color);
+        $end && Z::end();
     }
 
     final public function success($msg, $color = 'green')
@@ -131,7 +135,7 @@ trait Utils
             fwrite(STDOUT, $question);
             $value = trim(fgets(STDIN));
             if (!is_null($default) && ('' === $value || '0' === $value)) {
-                $value = $default;
+                $value  = $default;
                 $status = true;
             } elseif ($value || !$canNull) {
                 $status = true;
@@ -148,7 +152,7 @@ trait Utils
 
     final public function progress($i, $title = 'mprogress: ', $mprogressColor = '', $bgColor = '', $pad = ' ')
     {
-        $bgColor = $bgColor ? "\033[" . z::arrayGet($this->bgColors, $bgColor, 'white') . 'm' : '';
+        $bgColor        = $bgColor ? "\033[" . z::arrayGet($this->bgColors, $bgColor, 'white') . 'm' : '';
         $mprogressColor = $mprogressColor ? "\033[" . z::arrayGet($this->colors, $mprogressColor, 'white') . 'm' : '';
         printf("{$title}{$bgColor}{$mprogressColor} %d%% %s\r\033[0m", $i, str_repeat($pad, $i));
     }
@@ -156,8 +160,8 @@ trait Utils
     final public function copyFile($originFile, $file, $force = false, \Closure $cb = null, $tip = 'copy config: ')
     {
         $originFile = Z::realPath($originFile, false, false);
-        $file = Z::realPath($file, false, false);
-        $status = false;
+        $file       = Z::realPath($file, false, false);
+        $status     = false;
         if (!file_exists($file) || $force) {
             if ($tip) {
                 $this->printStrN("{$tip}{$originFile} -> {$file}");
