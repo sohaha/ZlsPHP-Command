@@ -7,7 +7,6 @@ use Zls\Command\Utils;
 
 /**
  * Zls_Command_Create_Mysql.
- *
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
  * @updatetime    2017-5-31 12:11:36
@@ -25,10 +24,10 @@ class Mysql
             $this->error('table name required, please use --table TableName');
             Z::finish();
         } else {
-            $this->type = $type;
-            $this->table = $table;
+            $this->type    = $type;
+            $this->table   = $table;
             $this->dbGroup = $dbGroup;
-            $columns = $this->getTableFieldsInfo($table, $dbGroup);
+            $columns       = $this->getTableFieldsInfo($table, $dbGroup);
 
             return $this->$type($columns, $table);
         }
@@ -54,19 +53,18 @@ class Mysql
     /**
      * @param string                     $tableName
      * @param \Zls_Database_ActiveRecord $db
-     *
      * @return array
      */
     public function sqlsrv($tableName, $db)
     {
-        $info = [];
-        $result = $db->execute('SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\''.$db->getTablePrefix().$tableName.'\'')->rows();
-        $primary = $db->execute('EXEC sp_pkeys @table_name=\''.$db->getTablePrefix().$tableName.'\'')->value('COLUMN_NAME');
+        $info    = [];
+        $result  = $db->execute('SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\'' . $db->getTablePrefix() . $tableName . '\'')->rows();
+        $primary = $db->execute('EXEC sp_pkeys @table_name=\'' . $db->getTablePrefix() . $tableName . '\'')->value('COLUMN_NAME');
         if ($result) {
             foreach ($result as $val) {
                 $info[$val['COLUMN_NAME']] = [
-                    'name' => $val['COLUMN_NAME'],
-                    'type' => $val['DATA_TYPE'],
+                    'name'    => $val['COLUMN_NAME'],
+                    'type'    => $val['DATA_TYPE'],
                     'comment' => $val['COLUMN_NAME'], //注释
                     'notnull' => 'NO' == $val['IS_NULLABLE'] ? 1 : 0,
                     'default' => $val['COLUMN_DEFAULT'],
@@ -81,24 +79,22 @@ class Mysql
 
     public function afresh()
     {
-        $type = $this->type;
-        $columns = $this->getTableFieldsInfo($this->table, $this->dbGroup);
-        $result['code'] = '    '.$this->$type($columns, $this->table).\PHP_EOL;
+        $type              = $this->type;
+        $columns           = $this->getTableFieldsInfo($this->table, $this->dbGroup);
         $result['methods'] = [];
-        $result['args'] = [];
-        if ('dao' === $type) {
-            $result['methods'] = [
-                'getColumns',
-                'getHideColumns',
-                'getPrimaryKey',
-                'getTable',
-                'getBean',
-            ];
-        } else {
-            foreach ($columns as $column) {
-                $result['methods'][] = 'get'.z::strSnake2Camel($column['name']);
-                $result['methods'][] = 'set'.z::strSnake2Camel($column['name']);
-            }
+        $result['args']    = [];
+        switch ($type) {
+            case 'dao':
+                list($code, $warn, $methods) = $this->$type($columns, $this->table);
+                $result['code']    = '    ' . $code . PHP_EOL;
+                $result['methods'] = $methods;
+                break;
+            default:
+                $result['code'] = '    ' . $this->$type($columns, $this->table) . PHP_EOL;
+                foreach ($columns as $column) {
+                    $result['methods'][] = 'get' . z::strSnake2Camel($column['name']);
+                    $result['methods'][] = 'set' . z::strSnake2Camel($column['name']);
+                }
         }
 
         return $result;
@@ -107,18 +103,17 @@ class Mysql
     /**
      * @param string                     $tableName
      * @param \Zls_Database_ActiveRecord $db
-     *
      * @return array
      */
     private function mysql($tableName, $db)
     {
-        $info = [];
-        $result = $db->execute('SHOW FULL COLUMNS FROM '.$db->getTablePrefix().$tableName)->rows();
+        $info   = [];
+        $result = $db->execute('SHOW FULL COLUMNS FROM ' . $db->getTablePrefix() . $tableName)->rows();
         if ($result) {
             foreach ($result as $val) {
                 $info[$val['Field']] = [
-                    'name' => $val['Field'],
-                    'type' => $val['Type'],
+                    'name'    => $val['Field'],
+                    'type'    => $val['Type'],
                     'comment' => $val['Comment'] ? $val['Comment'] : $val['Field'],
                     'notnull' => 'NO' == $val['Null'] ? 1 : 0,
                     'default' => $val['Default'],
