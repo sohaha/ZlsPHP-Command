@@ -87,11 +87,12 @@ class Run extends Command
             $phar->buildFromDirectory($path, '/^zls\.ini\.example$/');
             $phar->compressFiles(\Phar::GZ);
             $phar->stopBuffering();
+            $app = str_replace(Z::realPath(getcwd()),'',Z::realPath(ZLS_APP_PATH));
             $webIndex
                 = "<?php
 Phar::mapPhar('{$packageName}');
 define('ZLS_PATH', 'phar://{$packageName}/');
-define('ZLS_APP_PATH', 'phar://{$packageName}/application/');
+define('ZLS_APP_PATH', 'phar://{$packageName}{$app}/');
 define('ZLS_STORAGE_PATH', getcwd().'/../storage/');
 require 'phar://{$packageName}/public/index.php';
 __HALT_COMPILER();
