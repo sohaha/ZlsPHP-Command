@@ -175,10 +175,11 @@ trait Utils
 
     /**
      * 目录复制
-     * @param $originDatabasePath
-     * @param $databasePath
+     * @param string  $originDatabasePath
+     * @param string  $databasePath
+     * @param boolean $allForce 是否全部覆盖
      */
-    final public function batchCopy($originDatabasePath, $databasePath)
+    final public function batchCopy($originDatabasePath, $databasePath, $allForce = false)
     {
         $this->listDir($originDatabasePath, $arr);
         $copy = function ($file, $dest) {
@@ -192,22 +193,24 @@ trait Utils
         foreach ($arr as $file) {
             $dest = str_replace($originDatabasePath, $databasePath, $file);
             if (file_exists($dest)) {
-                if (filemtime($dest) > filemtime($file)) {
+                if (filemtime($dest) != filemtime($file)) {
                     if (@file_get_contents($dest) === @file_get_contents($file)) {
                         continue;
-                    }
-                    $pad    = str_repeat(' ', 12);
-                    $notice = $this->color('[ Notice ]', 'white', 'blue');
-                    $msg    = $notice . ': File exists ' . Z::safePath($dest) . "\n{$pad}" . $this->color('Whether to overwrite the current file [y,N] ', 'cyan');
-                    $value  = $this->ask($msg, 'n');
-                    $value  = strtoupper(trim($value));
-                    if ($value === 'Y' || $value === 'YES') {
+                    } elseif ($allForce) {
                         $copy($file, $dest);
                     } else {
-                        $this->printStr($this->color('[ Skip ]', 'white', 'cyan'));
-                        $this->printStrN(': Skip replacement', 'light_cyan');
+                        $pad    = str_repeat(' ', 12);
+                        $notice = $this->color('[ Notice ]', 'white', 'blue');
+                        $msg    = $notice . ': File exists ' . Z::safePath($dest) . "\n{$pad}" . $this->color('Whether to overwrite the current file [y,N] ', 'cyan');
+                        $value  = $this->ask($msg, 'n');
+                        $value  = strtoupper(trim($value));
+                        if ($value === 'Y' || $value === 'YES') {
+                            $copy($file, $dest);
+                        } else {
+                            $this->printStr($this->color('[ Skip ]', 'white', 'cyan'));
+                            $this->printStrN(': Skip replacement', 'light_cyan');
+                        }
                     }
-                    $this->printStrN();
                 }
             } else {
                 $dest = z::realPathMkdir($dest, false, true);
