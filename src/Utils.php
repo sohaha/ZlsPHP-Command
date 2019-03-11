@@ -8,7 +8,6 @@ use Z;
  * Command\Utils.
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
- * @updatetime    2019-3-1 19:57:42
  */
 trait Utils
 {
@@ -75,7 +74,6 @@ trait Utils
 
     final public function warning($err, $color = 'dark_gray')
     {
-
         $this->printStr('[ warning ]', 'yellow');
         $this->printStrN(': ' . $err, $color);
     }
@@ -179,7 +177,7 @@ trait Utils
      * @param string  $databasePath
      * @param boolean $allForce 是否全部覆盖
      */
-    final public function batchCopy($originDatabasePath, $databasePath, $allForce = false)
+    final public function batchCopy($originDatabasePath, $databasePath, $allForce = false, $destPathProcess = null)
     {
         $this->listDir($originDatabasePath, $arr);
         $copy = function ($file, $dest) {
@@ -192,6 +190,9 @@ trait Utils
         };
         foreach ($arr as $file) {
             $dest = str_replace($originDatabasePath, $databasePath, $file);
+            if(is_callable($destPathProcess)){
+                $dest = $destPathProcess($file, $dest);
+            }
             if (file_exists($dest)) {
                 if (filemtime($dest) != filemtime($file)) {
                     if (@file_get_contents($dest) === @file_get_contents($file)) {
