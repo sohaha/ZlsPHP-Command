@@ -54,6 +54,9 @@ class Create extends Command
         if (!in_array($type, $types)) {
             $this->error('type required, please use : --type [' . join(',', $types) . ']', null, true);
         }
+        if (!$name && strpos($args[1], ':')) {
+            $name = Z::arrayGet($args, [2]);
+        }
         if (empty($name)) {
             $this->error('name required , please use --name FileName', null, true);
         }

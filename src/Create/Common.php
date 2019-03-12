@@ -17,10 +17,6 @@ class Common
 
     public function creation($name, $type, $table, $hmvc, $dbGroup, $force, $style = 'PSR4')
     {
-        if (!$table) {
-            $table = explode('/', $name);
-            $table = Z::strCamel2Snake(end($table));
-        }
         $afresh = false;
         if (!in_array($style, ['PSR4', 'PSR0'])) {
             $style = 'PSR4';
@@ -35,6 +31,7 @@ class Common
         }
         switch ($type) {
             case 'controller':
+                list($name) = $this->nameVerify($name, false, $type);
                 $info = [
                     'dir'         => $config->getControllerDirName(),
                     'parentClass' => 'Zls_Controller',
@@ -43,6 +40,7 @@ class Common
                 ];
                 break;
             case 'business':
+                list($name) = $this->nameVerify($name, false, $type);
                 $info = [
                     'dir'         => $config->getBusinessDirName(),
                     'parentClass' => 'Zls_Business',
@@ -51,6 +49,7 @@ class Common
                 ];
                 break;
             case 'model':
+                list($name) = $this->nameVerify($name, false, $type);
                 $info = [
                     'dir'         => $config->getModelDirName(),
                     'parentClass' => 'Zls_Model',
@@ -59,6 +58,7 @@ class Common
                 ];
                 break;
             case 'task':
+                list($name) = $this->nameVerify($name, false, $type);
                 $info = [
                     'dir'         => $config->getTaskDirName(),
                     'parentClass' => 'Zls_Task',
@@ -67,6 +67,7 @@ class Common
                 ];
                 break;
             case 'dao':
+                list($name, $table) = $this->nameVerify($name, $table, $type);
                 $afresh = true;
                 list($method, $warn) = z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->creation($type, $table, $dbGroup);
                 if ($warn) {
@@ -81,6 +82,7 @@ class Common
                 break;
             case 'bean':
                 //$afresh = true;
+                list($name, $table) = $this->nameVerify($name, $table, $type);
                 $info = [
                     'dir'         => $config->getBeanDirName(),
                     'parentClass' => 'Zls_Bean',
@@ -112,6 +114,24 @@ class Common
         }
     }
 
+    private  function nameVerify($name, $table, $suffix)
+    {
+        $getTable = function ($name, $table) {
+            if (is_null( $table)) {
+                $table = explode('/', $name);
+                $table = Z::strCamel2Snake(end($table));
+            }
+            return $table;
+        };
+        $suffix = ucfirst($suffix);
+        if (!Z::strEndsWith($name, $suffix)) {
+            $table = $getTable($name, $table);
+            $name = $name .  $suffix;
+        } else {
+            $table = $getTable(substr($name, 0, strlen($name) - strlen($suffix)), $table);
+        }
+        return [$name, $table];
+    }
     /**
      * @param $file
      * @param $typename
