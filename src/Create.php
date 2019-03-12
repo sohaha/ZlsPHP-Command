@@ -6,9 +6,7 @@ use z;
 
 /**
  * Create.
- * @author        影浅-Seekwe
- * @email       seekwe@gmail.com
- * @updatetime    2017-2-27 16:52:51
+ * @author        影浅 seekwe@gmail.com
  */
 class Create extends Command
 {
@@ -66,6 +64,9 @@ class Create extends Command
         $hmvc    = Z::arrayGet($args, ['hmvc', '-hmvc']);
         $argc    = [$name, $type, $table, $hmvc, $dbGroup, $force, $style];
 
+        if ($name[0] !== strtoupper($name[0])) {
+            $name = Z::strSnake2Camel($name);
+        }
         return ['name' => $name, 'type' => $type, 'table' => $table, 'hmvc' => $hmvc, 'db' => $dbGroup, 'force' => $force, 'style' => $style];
     }
 

@@ -7,9 +7,7 @@ use Zls\Command\Utils;
 
 /**
  * Zls_Command_Create_Common.
- * @author        影浅-Seekwe
- * @email       seekwe@gmail.com
- * @updatetime    2017-2-27 16:52:51
+ * @author        影浅 seekwe@gmail.com
  */
 class Common
 {
@@ -19,6 +17,10 @@ class Common
 
     public function creation($name, $type, $table, $hmvc, $dbGroup, $force, $style = 'PSR4')
     {
+        if (!$table) {
+            $table = explode('/', $name);
+            $table = Z::strCamel2Snake(end($table));
+        }
         $afresh = false;
         if (!in_array($style, ['PSR4', 'PSR0'])) {
             $style = 'PSR4';
