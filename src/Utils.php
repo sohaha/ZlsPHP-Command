@@ -9,22 +9,19 @@ use Z;
  * @author        影浅-Seekwe
  * @email         seekwe@gmail.com
  */
-trait Utils
-{
+trait Utils {
     private $showColor;
-    private $colors = [];
+    private $colors   = [];
     private $bgColors = [];
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->initColor();
     }
 
-    public function initColor()
-    {
+    public function initColor() {
         $this->showColor = $this->ansiColorsSupported();
         if ($this->showColor) {
-            $this->colors   = [
+            $this->colors = [
                 'black'        => '0;30',
                 'dark_gray'    => '1;30',
                 'blue'         => '0;34',
@@ -55,36 +52,30 @@ trait Utils
         }
     }
 
-    private function ansiColorsSupported()
-    {
+    private function ansiColorsSupported() {
         return DIRECTORY_SEPARATOR === '\\'
-            ? false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI')
-            : function_exists('posix_isatty') && @posix_isatty(STDOUT);
+        ? false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI')
+        : function_exists('posix_isatty') && @posix_isatty(STDOUT);
     }
 
-    final public function getColors()
-    {
+    final public function getColors() {
         return $this->colors;
     }
 
-    final public function getBgColors()
-    {
+    final public function getBgColors() {
         return $this->bgColors;
     }
 
-    final public function warning($err, $color = 'dark_gray')
-    {
+    final public function warning($err, $color = 'dark_gray') {
         $this->printStr('[ warning ]', 'yellow');
         $this->printStrN(': ' . $err, $color);
     }
 
-    final public function printStr($str = '', $color = '', $bgColor = null)
-    {
+    final public function printStr($str = '', $color = '', $bgColor = null) {
         echo $this->color($str, $color, $bgColor);
     }
 
-    final public function color($str = '', $color = null, $bgColor = null)
-    {
+    final public function color($str = '', $color = null, $bgColor = null) {
         $colorStr = '';
         $colorStr .= $this->_color($color, $this->colors);
         $colorStr .= $this->_color($bgColor, $this->bgColors);
@@ -93,19 +84,16 @@ trait Utils
         return $colorStr;
     }
 
-    final public function _color($color = '', array $colors = [])
-    {
+    final public function _color($color = '', array $colors = []) {
         return ($this->showColor && isset($colors[$color])) ? "\033[" . $colors[$color] . 'm' : '';
     }
 
-    final public function printStrN($str = '', $color = '', $bgColor = null)
-    {
+    final public function printStrN($str = '', $color = '', $bgColor = null) {
         echo $this->color($str, $color, $bgColor);
         echo PHP_EOL;
     }
 
-    final public function error($err, $color = '', $end = false)
-    {
+    final public function error($err, $color = '', $end = false) {
         if (!$color) {
             $color = 'red';
         }
@@ -114,20 +102,17 @@ trait Utils
         $end && Z::end();
     }
 
-    final public function success($msg, $color = 'green')
-    {
+    final public function success($msg, $color = 'green') {
         $this->printStr('[ Success ]', 'white', 'green');
         $this->printStrN(': ' . $msg, $color);
     }
 
-    final public function input($question, $default = null, $canNull = false, callable $verification = null)
-    {
+    final public function input($question, $default = null, $canNull = false, callable $verification = null) {
         $question = $this->color('[ Inpit ]', 'light_cyan') . ': ' . $question;
         $this->ask($question, $default, $canNull, $verification);
     }
 
-    final public function ask($question, $default = null, $canNull = false, callable $verification = null)
-    {
+    final public function ask($question, $default = null, $canNull = false, callable $verification = null) {
         $status = false;
         do {
             fwrite(STDOUT, $question);
@@ -148,15 +133,13 @@ trait Utils
         return $value;
     }
 
-    final public function progress($i, $title = 'mprogress: ', $mprogressColor = '', $bgColor = '', $pad = ' ')
-    {
+    final public function progress($i, $title = 'mprogress: ', $mprogressColor = '', $bgColor = '', $pad = ' ') {
         $bgColor        = $bgColor ? "\033[" . z::arrayGet($this->bgColors, $bgColor, 'white') . 'm' : '';
         $mprogressColor = $mprogressColor ? "\033[" . z::arrayGet($this->colors, $mprogressColor, 'white') . 'm' : '';
         printf("{$title}{$bgColor}{$mprogressColor} %d%% %s\r\033[0m", $i, str_repeat($pad, $i));
     }
 
-    final public function copyFile($originFile, $file, $force = false, \Closure $cb = null, $tip = 'copy config: ')
-    {
+    final public function copyFile($originFile, $file, $force = false, \Closure $cb = null, $tip = 'copy config: ') {
         $originFile = Z::realPath($originFile, false, false);
         $file       = Z::realPath($file, false, false);
         $status     = false;
@@ -164,7 +147,7 @@ trait Utils
             if ($tip) {
                 $this->printStrN("{$tip}{$originFile} -> {$file}");
             }
-            $status = (bool)@copy($originFile, $file);
+            $status = (bool) @copy($originFile, $file);
         }
         if ($cb instanceof \Closure) {
             $cb($status);
@@ -177,10 +160,9 @@ trait Utils
      * @param string  $databasePath
      * @param boolean $allForce 是否全部覆盖
      */
-    final public function batchCopy($originDatabasePath, $databasePath, $allForce = false, $destPathProcess = null)
-    {
+    final public function batchCopy($originDatabasePath, $databasePath, $allForce = false, $copyProcess = null) {
         $this->listDir($originDatabasePath, $arr);
-        $copy = function ($file, $dest) {
+        $copy = is_callable($copyProcess) ? $copyProcess : function ($file, $dest) {
             if (!@copy($file, $dest)) {
                 $this->error('Copy error -> ' . Z::safePath($dest));
             } else {
@@ -190,9 +172,6 @@ trait Utils
         };
         foreach ($arr as $file) {
             $dest = str_replace($originDatabasePath, $databasePath, $file);
-            if(is_callable($destPathProcess)){
-                $dest = $destPathProcess($file, $dest);
-            }
             if (file_exists($dest)) {
                 if (filemtime($dest) != filemtime($file)) {
                     if (@file_get_contents($dest) === @file_get_contents($file)) {
@@ -225,8 +204,7 @@ trait Utils
      * @param $dir
      * @param $arr
      */
-    private function listDir($dir, &$arr)
-    {
+    private function listDir($dir, &$arr) {
         if (is_dir($dir) && ($dh = opendir($dir))) {
             while (false !== ($file = readdir($dh))) {
                 if ('.' === $file || '..' === $file) {
