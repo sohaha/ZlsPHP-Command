@@ -31,7 +31,7 @@ class Common
         }
         switch ($type) {
             case 'controller':
-                list($name) = $this->nameVerify($name, false, $type);
+                // list($name) = $this->nameVerify($name, false, $type);
                 $info = [
                     'dir'         => $config->getControllerDirName(),
                     'parentClass' => 'Zls_Controller',
