@@ -5,9 +5,8 @@ namespace Zls\Command;
 use Z;
 
 /**
- * Command\Utils.
- * @author        影浅-Seekwe
- * @email         seekwe@gmail.com
+ * Command_Utils.
+ * @author        影浅-seekwe@gmail.com
  */
 trait Utils
 {
@@ -166,7 +165,7 @@ trait Utils
             }
             $status = (bool)@copy($originFile, $file);
         }
-        if ($cb instanceof \Closure) {
+        if (is_callable($cb)) {
             $cb($status);
         }
     }
@@ -180,33 +179,35 @@ trait Utils
     final public function batchCopy($originDatabasePath, $databasePath, $allForce = false, $destPathProcess = null)
     {
         $this->listDir($originDatabasePath, $arr);
-        $copy = function ($file, $dest) {
-            if (!@copy($file, $dest)) {
-                $this->error('Copy error -> ' . Z::safePath($dest));
+        $copy = function ($file, $destFinalPath, $dest) {
+            if (!@copy($file, $destFinalPath)) {
+                $this->error('Copy error -> ' . Z::safePath($destFinalPath));
             } else {
-                @copy($dest, $file);
-                $this->success('Copy success -> ' . Z::safePath($dest));
+                @touch($destFinalPath, filemtime($file));
+                $this->success('Copy success -> ' . Z::safePath($destFinalPath));
             }
         };
         foreach ($arr as $file) {
-            $dest = str_replace($originDatabasePath, $databasePath, $file);
-            if(is_callable($destPathProcess)){
-                $dest = $destPathProcess($file, $dest);
+            $destPath = str_replace($originDatabasePath, $databasePath, $file);
+            if (is_callable($destPathProcess)) {
+                $destFinalPath = $destPathProcess($destPath, $file);
+            } else {
+                $destFinalPath = $destPath;
             }
-            if (file_exists($dest)) {
-                if (filemtime($dest) != filemtime($file)) {
-                    if (@file_get_contents($dest) === @file_get_contents($file)) {
+            if (file_exists($destFinalPath)) {
+                if (filemtime($destFinalPath) != filemtime($file)) {
+                    if (@file_get_contents($destFinalPath) === @file_get_contents($file)) {
                         continue;
                     } elseif ($allForce) {
-                        $copy($file, $dest);
+                        $copy($file, $destFinalPath, $destPath);
                     } else {
                         $pad    = str_repeat(' ', 12);
                         $notice = $this->color('[ Notice ]', 'white', 'blue');
-                        $msg    = $notice . ': File exists ' . Z::safePath($dest) . "\n{$pad}" . $this->color('Whether to overwrite the current file [y,N] ', 'cyan');
+                        $msg    = $notice . ': File exists ' . Z::safePath($destFinalPath) . "\n{$pad}" . $this->color('Whether to overwrite the current file [y,N] ', 'cyan');
                         $value  = $this->ask($msg, 'n');
                         $value  = strtoupper(trim($value));
                         if ($value === 'Y' || $value === 'YES') {
-                            $copy($file, $dest);
+                            $copy($file, $destFinalPath, $destPath);
                         } else {
                             $this->printStr($this->color('[ Skip ]', 'white', 'cyan'));
                             $this->printStrN(': Skip replacement', 'light_cyan');
@@ -214,8 +215,8 @@ trait Utils
                     }
                 }
             } else {
-                $dest = z::realPathMkdir($dest, false, true);
-                $copy($file, $dest);
+                $destFinalPath = z::realPathMkdir($destFinalPath, false, true);
+                $copy($file, $destFinalPath, $destPath);
             }
         }
     }
