@@ -117,7 +117,7 @@ class Common
     private  function nameVerify($name, $table, $suffix)
     {
         $getTable = function ($name, $table) {
-            if (is_null( $table)) {
+            if (is_null($table)) {
                 $table = explode('/', $name);
                 $table = Z::strCamel2Snake(end($table));
             }
@@ -146,6 +146,7 @@ class Common
         $typename = ($this->hmvc ? 'Hmvc_' . $typename : '' . $typename) . '_';
         z::includeOnce($file);
         $obj = z::factory($typename . $classname);
+
         try {
             $ref     = new \ReflectionClass($obj);
             $factory = z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->afresh();
@@ -157,7 +158,7 @@ class Common
                 foreach ($factory['methods'] as $v) {
                     try {
                         if ($method = $ref->getMethod($v)) {
-                            if ($file === $method->getFileName()) {
+                            if (Z::realPath($file) === Z::realPath($method->getFileName())) {
                                 $start = $method->getStartLine() - 1;
                                 $end   = $method->getEndLine() - 1;
                                 do {
