@@ -20,6 +20,7 @@ class Main extends Command
             //'set'    => '\Zls\Command\Set',
             'run' => '\Zls\Command\Run',
             'unit' => '\Zls\Command\Unit',
+            'unitInit' => '\Zls\Command\UnitInit',
             'start' => '\Zls\Command\Start',
             //'update' => '\Zls\Command\Update',
             'create' => '\Zls\Command\Create',

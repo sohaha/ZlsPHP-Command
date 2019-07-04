@@ -78,6 +78,11 @@ class Unit extends Command
 
             return;
         }
+        if (!is_dir(Z::realPath('../tests'))) {
+            $this->error("No 'tests' directory found, please initialize the template\nCommand: php zls unitInit");
+
+            return;
+        }
         if (!isset($GLOBALS['__PHPUNIT_ISOLATION_BLACKLIST'])) {
             $GLOBALS['__PHPUNIT_ISOLATION_BLACKLIST'] = [];
         }
@@ -89,5 +94,10 @@ class Unit extends Command
         unset($_SERVER['argv'][1]);
         $_SERVER['argv'] = array_values($_SERVER['argv']);
         \PHPUnit\TextUI\Command::main();
+    }
+
+    public function init($args)
+    {
+        (new UnitInit)->execute($args);
     }
 }

@@ -181,6 +181,8 @@ trait Utils
      */
     final public function batchCopy($originDatabasePath, $databasePath, $allForce = false, $destPathProcess = null)
     {
+        $originDatabasePath = Z::realPath($originDatabasePath);
+        $databasePath       = Z::realPath($databasePath);
         $this->listDir($originDatabasePath, $arr);
         $copy = function ($file, $destFinalPath, $dest) {
             if (!@copy($file, $destFinalPath)) {
@@ -205,7 +207,7 @@ trait Utils
                         $copy($file, $destFinalPath, $destPath);
                     } else {
                         $pad    = str_repeat(' ', 12);
-                        $notice = $this->color('[ Notice ]', 'white', 'blue');
+                        $notice = $this->color('[ Notify ]', 'white', 'blue');
                         $msg    = $notice . ': File exists ' . Z::safePath($destFinalPath) . "\n{$pad}" . $this->color('Whether to overwrite the current file [y,N] ', 'cyan');
                         $value  = $this->ask($msg, 'n');
                         $value  = strtoupper(trim($value));
