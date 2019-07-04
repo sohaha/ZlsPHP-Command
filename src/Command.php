@@ -63,7 +63,7 @@ abstract class Command
         }
         if ($example) {
             $this->printStrN();
-            $this->printStrN('Example:', 'yellow', '');
+            $this->printStrN('Demo:', 'yellow', '');
             foreach (
                 $this->beautify($example, z::arrayGet($args, 0) . ' ' . $command,
                     'cyan', false) as $k => $v
@@ -85,6 +85,7 @@ abstract class Command
      */
     public function commands()
     {
+        return [];
     }
 
     final public function getHandle()

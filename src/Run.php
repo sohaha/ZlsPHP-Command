@@ -6,12 +6,9 @@ use Z;
 
 /**
  * 互动.
- *
  * @author        影浅
  * @email         seekwe@gmail.com
- *
  * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- *
  * @see           ---
  * @since         v0.0.1
  * @updatetime    2018-02-01 15:01
@@ -33,7 +30,10 @@ class Run extends Command
     {
         return [
             ' release' => 'Optimize the formal environment configuration',
-            ' build' => 'Project packaging phar',
+            ' build'   => [
+                'Project packaging phar',
+                ['-o, -O, --output' => 'Custom output directory'],
+            ],
         ];
     }
 
@@ -62,22 +62,22 @@ class Run extends Command
             z::rmdir($path, false);
             $phar = new \Phar(Z::realPath($file, false, false));
             $phar->extractTo($path);
-            $this->success('extract -> '.$path);
+            $this->success('extract -> ' . $path);
         }
     }
 
-    public function build()
+    public function build($args)
     {
-        $name = 'zls';
-        $ext = '.phar';
-        $time = date('YmdHis');
+        $name        = 'zls';
+        $ext         = '.phar';
+        $time        = date('YmdHis');
         $packageName = "{$name}{$ext}";
-        $buildPath = Z::realPathMkdir('build/', true, false, false);
-        $path = ZLS_PATH.'../';
-        $pharPath = $buildPath.$packageName;
+        $buildPath   = Z::realPathMkdir(Z::arrayGet($args, ['o', 'O', '-output'], 'build/'), true, false, false);
+        $path        = ZLS_PATH . '../';
+        $pharPath    = $buildPath . $packageName;
         try {
             @unlink($pharPath);
-            $phar = new \Phar(
+            $phar    = new \Phar(
                 $pharPath,
                 0,
                 $packageName
@@ -87,26 +87,38 @@ class Run extends Command
             $phar->buildFromDirectory($path, '/^zls\.ini\.example$/');
             $phar->compressFiles(\Phar::GZ);
             $phar->stopBuffering();
-            $app = str_replace(Z::realPath(getcwd()),'',Z::realPath(ZLS_APP_PATH));
+            $app = str_replace(Z::realPath(getcwd()), '', Z::realPath(ZLS_APP_PATH));
             $webIndex
-                = "<?php
+                 = "<?php
 Phar::mapPhar('{$packageName}');
-define('ZLS_PATH', 'phar://{$packageName}/');
-define('ZLS_APP_PATH', 'phar://{$packageName}{$app}/');
-define('ZLS_STORAGE_PATH', getcwd().'/../storage/');
+defined('ZLS_PATH') || define('ZLS_PATH', 'phar://{$packageName}/');
+defined('ZLS_APP_PATH') || define('ZLS_APP_PATH', 'phar://{$packageName}{$app}/');
+defined('ZLS_STORAGE_PATH') || define('ZLS_STORAGE_PATH', getcwd().'/../storage/');
 require 'phar://{$packageName}/public/index.php';
 __HALT_COMPILER();
 ";
             $phar->setStub(
                 $webIndex
             );
-            $publicPath = Z::realPathMkdir($buildPath.'public', true);
+            $publicPath = Z::realPathMkdir($buildPath . 'public', true);
             $this->copyDir(Z::realPath('./'), $publicPath);
-            file_put_contents($publicPath.'index.php', "<?php
+            $iniFile = Z::realPath('zls.ini.example', false, false);
+            if (is_file($iniFile)) {
+                copy($iniFile, $buildPath . 'zls.ini.example');
+            }
+            file_put_contents($publicPath . 'index.php', "<?php
+/**
+ * Zls
+ * @author        影浅 <seekwe@gmail.com>
+ * @see           https://docs.73zls.com/zls-php/#
+ */
+defined('ZLS_PATH') || define('ZLS_PATH', __DIR__ . '/');
+defined('ZLS_INDEX_NAME') || define('ZLS_INDEX_NAME', pathinfo(__FILE__, PATHINFO_BASENAME));
+defined('ZLS_STORAGE_PATH') || define('ZLS_STORAGE_PATH', ZLS_PATH. '/../storage/');
 require __DIR__.'/../{$packageName}';");
-            $this->success('build -> '.z::realpath($pharPath));
+            $this->success('build -> ' . z::realpath($pharPath));
         } catch (\Exception $e) {
-            z::rmdir($buildPath);
+            Z::rmdir($buildPath);
             $this->error($e->getMessage());
         }
     }
@@ -114,7 +126,7 @@ require __DIR__.'/../{$packageName}';");
     private function copyDir($dirSrc, $dirTo)
     {
         if (is_file($dirTo)) {
-            return $dirTo.'不是一个目录';
+            return $dirTo . '不是一个目录';
         }
         if (!file_exists($dirTo)) {
             mkdir($dirTo);
@@ -122,14 +134,14 @@ require __DIR__.'/../{$packageName}';");
         if ($handle = opendir($dirSrc)) {
             while ($filename = readdir($handle)) {
                 if ('.' != $filename && '..' != $filename) {
-                    $subsrcfile = $dirSrc.'/'.$filename;
-                    $subtofile = $dirTo.'/'.$filename;
+                    $subsrcfile = $dirSrc . '/' . $filename;
+                    $subtofile  = $dirTo . '/' . $filename;
                     if (is_dir($subsrcfile)) {
                         $this->copyDir($subsrcfile, $subtofile); //再次递归调用copydir
                     }
                     if (is_file($subsrcfile)) {
                         if (z::realPath($subsrcfile) !== z::realPath(ZLS_PATH
-                                .ZLS_INDEX_NAME)
+                                . ZLS_INDEX_NAME)
                         ) {
                             copy($subsrcfile, $subtofile);
                         }
@@ -148,7 +160,7 @@ require __DIR__.'/../{$packageName}';");
         /**
          * @var \Zls\Action\Ini
          */
-        $Ini = z::extension('Action\Ini');
+        $Ini    = z::extension('Action\Ini');
         $config = z::config('ini');
         $config = z::arrayMap($config, function ($v) {
             $config = [];
@@ -158,7 +170,7 @@ require __DIR__.'/../{$packageName}';");
 
             return $config;
         });
-        $status = @file_put_contents(ZLS_PATH.'../zls.ini',
+        $status = @file_put_contents(ZLS_PATH . '../zls.ini',
             $Ini->extended($config));
         $this->printStrN('Modify zls.ini success', 'green');
     }

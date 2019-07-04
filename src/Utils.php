@@ -122,7 +122,8 @@ trait Utils
     final public function input($question, $default = null, $canNull = false, callable $verification = null)
     {
         $question = $this->color('[ Inpit ]', 'light_cyan') . ': ' . $question;
-        $this->ask($question, $default, $canNull, $verification);
+
+        return $this->ask($question, $default, $canNull, $verification);
     }
 
     final public function ask($question, $default = null, $canNull = false, callable $verification = null)
@@ -172,9 +173,11 @@ trait Utils
 
     /**
      * 目录复制
+     *
      * @param string  $originDatabasePath
      * @param string  $databasePath
      * @param boolean $allForce 是否全部覆盖
+     * @param null    $destPathProcess
      */
     final public function batchCopy($originDatabasePath, $databasePath, $allForce = false, $destPathProcess = null)
     {
@@ -223,6 +226,7 @@ trait Utils
 
     /**
      * 读取文件列表
+     *
      * @param $dir
      * @param $arr
      */
