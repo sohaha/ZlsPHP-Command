@@ -19,6 +19,7 @@ class Main extends Command
         = [
             //'set'    => '\Zls\Command\Set',
             'run' => '\Zls\Command\Run',
+            'unit' => '\Zls\Command\Unit',
             'start' => '\Zls\Command\Start',
             //'update' => '\Zls\Command\Update',
             'create' => '\Zls\Command\Create',
