@@ -38,6 +38,9 @@ class UnitInit extends Command
      */
     public function execute($args)
     {
+        if (!Z::arrayGet((new Main())->getBuiltInCommand(), 'unitInit')) {
+           $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit", '', true);
+        }
         $this->batchCopy(__DIR__ . '/../../unit/src/Templates', Z::realPathMkdir('.', true, false, false), false, function ($dest, $file) {
             return $this->destPathProcess($dest, $file);
         });

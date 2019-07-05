@@ -184,6 +184,11 @@ trait Utils
         $originDatabasePath = Z::realPath($originDatabasePath);
         $databasePath       = Z::realPath($databasePath);
         $this->listDir($originDatabasePath, $arr);
+        if(!$arr){
+            $this->printStr($this->color('[ Skip ]', 'white', 'cyan'));
+            $this->printStrN(': file does not exist', 'light_cyan');
+            return;
+        }
         $copy = function ($file, $destFinalPath, $dest) {
             if (!@copy($file, $destFinalPath)) {
                 $this->error('Copy error -> ' . Z::safePath($destFinalPath));
