@@ -2,12 +2,18 @@
 
 namespace Zls\Command\Create;
 
+use PHPUnit\Framework\TestCase as BaseTestCase;
 use Z;
+use Zls\Command\Main;
 use Zls\Command\Utils;
+use Zls\Unit\Templates;
+use Zls_Config;
+use Zls_Exception_Exit;
 
 /**
- * Zls_Command_Create_Common.
- * @author        影浅 seekwe@gmail.com
+ * Class Common
+ * @package       Zls\Command\Create
+ * @author        影浅 <seekwe@gmail.com>
  */
 class Common
 {
@@ -15,6 +21,17 @@ class Common
     const CREATE_MYSQL_CLASS_NAME = 'Zls\Command\Create\Mysql';
     private $hmvc;
 
+    /**
+     * @param        $name
+     * @param        $type
+     * @param        $table
+     * @param        $hmvc
+     * @param        $dbGroup
+     * @param        $force
+     * @param string $style
+     *
+     * @throws Zls_Exception_Exit
+     */
     public function creation($name, $type, $table, $hmvc, $dbGroup, $force, $style = 'PSR4')
     {
         $afresh = false;
@@ -22,13 +39,14 @@ class Common
             $style = 'PSR4';
         }
         $this->hmvc = $hmvc;
-        /** @var \Zls_Config $config */
+        /** @var Zls_Config $config */
         $config         = Z::config();
         $classesDir     = $config->getPrimaryAppDir() . $config->getClassesDirName() . '/';
         $getHmvcModules = $config->getHmvcModules();
         if ($this->hmvc && $HmvcModules = Z::arrayGet($getHmvcModules, $this->hmvc)) {
             $classesDir = $config->getPrimaryAppDir() . $config->getHmvcDirName() . '/' . $HmvcModules . '/' . $config->getClassesDirName() . '/';
         }
+        $info = [];
         switch ($type) {
             case 'controller':
                 // list($name) = $this->nameVerify($name, false, $type);
@@ -90,13 +108,33 @@ class Common
                     'nameTip'     => 'Bean',
                 ];
                 break;
+            case 'unit':
+                if (!Z::arrayGet((new Main())->getBuiltInCommand(), 'unitInit')) {
+                    $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit");
+                }
+                $info = [
+                    'dir'         => 'tests\Unit',
+                    'parentClass' => 'PHPUnit\Framework\TestCase',
+                    'method'      => (new Templates())->unit(),
+                    'nameTip'     => 'Unit',
+                    'noClass'     => true,
+                ];
+                break;
             default:
-                Z::finish("Unknown type : {$type}\n Please use : -type [controller,business,model,task,dao,bean]");
+                Z::end("Unknown type : {$type}\n Please use : -type [controller,business,model,task,dao,bean]");
         }
-        $classname   = $name;
-        $typename    = $info['dir'];
-        $file        = $classesDir . str_replace('_', '/', $typename . '_' . $classname) . '.php';
-        $file        = Z::realPath($file);
+        $classname = str_replace(['_', '\\'], '/', $name);
+        $classname = implode('/', Z::arrayMap(explode('/', $classname), function ($v) {
+            return ucfirst($v);
+        }));
+        $typename  = $info['dir'];
+        if (Z::arrayKeyExists('noClass', $info)) {
+            $file = $classname;
+            $file = Z::realPath($info['dir'] . '/' . $file, true, false) . (Z::strEndsWith($file, 'Test') ? $file : $file . 'Test') . '.php';
+        } else {
+            $file = $classesDir . str_replace('_', '/', $typename . '_' . $classname) . '.php';
+            $file = Z::realPath($file);
+        }
         $method      = $info['method'];
         $parentClass = $info['parentClass'];
         $tip         = $info['nameTip'];
@@ -107,31 +145,34 @@ class Common
                 $this->writeFile($typename, $classname, $method, $parentClass, $file, $tip, $style);
             } else {
                 $tip .= " [ {$classname} ] already exists. you can use -force to force the file.";
-                echo self::error($tip);
+                self::error($tip);
             }
         } else {
             $this->writeFile($typename, $classname, $method, $parentClass, $file, $tip, $style);
         }
     }
 
-    private  function nameVerify($name, $table, $suffix)
+    private function nameVerify($name, $table, $suffix)
     {
         $getTable = function ($name, $table) {
             if (is_null($table)) {
                 $table = explode('/', $name);
                 $table = Z::strCamel2Snake(end($table));
             }
+
             return $table;
         };
-        $suffix = ucfirst($suffix);
+        $suffix   = ucfirst($suffix);
         if (!Z::strEndsWith($name, $suffix)) {
             $table = $getTable($name, $table);
-            $name = $name .  $suffix;
+            $name  = $name . $suffix;
         } else {
             $table = $getTable(substr($name, 0, strlen($name) - strlen($suffix)), $table);
         }
+
         return [$name, $table];
     }
+
     /**
      * @param $file
      * @param $typename
@@ -146,7 +187,6 @@ class Common
         $typename = ($this->hmvc ? 'Hmvc_' . $typename : '' . $typename) . '_';
         z::includeOnce($file);
         $obj = z::factory($typename . $classname);
-
         try {
             $ref     = new \ReflectionClass($obj);
             $factory = z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->afresh();
@@ -199,10 +239,7 @@ class Common
 
     private function writeFile($typename, $classname, $method, $parentClass, $file, $tip, $style)
     {
-        $dir = dirname($file);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
+        Z::realPathMkdir(dirname($file));
         $content = $this->$style($typename, $classname, $parentClass, $method);
         if (file_put_contents($file, $content)) {
             $this->success("{$tip} [ {$classname} ] created successfully");
@@ -213,8 +250,11 @@ class Common
     private function PSR0($typename, $classname, $parentClass, $method)
     {
         $classname = $this->hmvc ? 'Hmvc_' : '';
-
-        return vsprintf("<?php\n\nclass {$classname}%s_%s extends %s \n{\n    %s\n}", [$typename, $classname, $parentClass, $method]);
+        if ($parentClass) {
+            return vsprintf("<?php\n\nclass {$classname}%s_%s extends %s \n{\n    %s\n}", [$typename, $classname, $parentClass, $method]);
+        } else {
+            return vsprintf("<?php\n\nclass {$classname}%s_%s \n{\n    %s\n}", [$typename, $classname, $method]);
+        }
     }
 
     private function PSR4($typename, $classname, $parentClass, $method)
@@ -228,7 +268,10 @@ class Common
             $typename = $typename . '\\' . $classnameArg;
         }
         $namespace = $this->hmvc ? 'namespace Hmvc\\' : 'namespace ';
-
-        return vsprintf("<?php\n\n{$namespace}%s;\nuse Z;\n\nclass %s extends \%s \n{\n    %s\n}", [$typename, $classname, $parentClass, $method]);
+        if ($parentClass) {
+            return vsprintf("<?php\n\n{$namespace}%s;\nuse Z;\n\nclass %s extends \%s \n{\n    %s\n}", [$typename, $classname, $parentClass, $method]);
+        } else {
+            return vsprintf("<?php\n\n{$namespace}%s;\nuse Z;\n\nclass %s \n{\n    %s\n}", [$typename, $classname, $method]);
+        }
     }
 }

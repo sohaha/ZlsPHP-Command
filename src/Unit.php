@@ -68,13 +68,8 @@ class Unit extends Command
             require $options['prepend'];
         }
         unset($options);
-        if (!trait_exists('Codedungeon\PHPUnitPrettyResultPrinter\PrinterTrait')) {
-            $this->error("Please install phpunit-result-printer!\nInstall Command: composer require --dev codedungeon/phpunit-result-printer");
-
-            return;
-        }
         if (!class_exists('\PHPUnit\TextUI\Command')) {
-            $this->error("Please install phpunit!\nInstall Command: composer require --dev phpunit/phpunit");
+            $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit");
 
             return;
         }
@@ -94,10 +89,5 @@ class Unit extends Command
         unset($_SERVER['argv'][1]);
         $_SERVER['argv'] = array_values($_SERVER['argv']);
         \PHPUnit\TextUI\Command::main();
-    }
-
-    public function init($args)
-    {
-        (new UnitInit)->execute($args);
     }
 }

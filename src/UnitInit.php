@@ -38,7 +38,16 @@ class UnitInit extends Command
      */
     public function execute($args)
     {
-        $this->batchCopy(__DIR__ . '/Unit/templates', Z::realPathMkdir('.', true, false, false));
+        $this->batchCopy(__DIR__ . '/../../unit/src/Templates', Z::realPathMkdir('.', true, false, false), false, function ($dest, $file) {
+            return $this->destPathProcess($dest, $file);
+        });
         $this->success('Generate unit test templates success');
+    }
+
+    private function destPathProcess($dest, $file)
+    {
+        $dest = str_replace('php.template', 'php', $dest);
+
+        return $dest;
     }
 }
