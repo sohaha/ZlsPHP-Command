@@ -110,7 +110,7 @@ class Common
                 break;
             case 'unit':
                 if (!Z::arrayGet((new Main())->getBuiltInCommand(), 'unitInit')) {
-                    $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit");
+                    $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit", '', true);
                 }
                 $info = [
                     'dir'         => 'tests\Unit',

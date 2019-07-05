@@ -40,6 +40,11 @@ class Unit extends Command
      */
     public function execute($args)
     {
+        if (!is_dir(Z::realPath('../tests'))) {
+            $this->error("No 'tests' directory found, please initialize the template\nCommand: php zls unitInit");
+
+            return;
+        }
         $this->run($args);
     }
 
@@ -70,11 +75,6 @@ class Unit extends Command
         unset($options);
         if (!class_exists('\PHPUnit\TextUI\Command')) {
             $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit");
-
-            return;
-        }
-        if (!is_dir(Z::realPath('../tests'))) {
-            $this->error("No 'tests' directory found, please initialize the template\nCommand: php zls unitInit");
 
             return;
         }
