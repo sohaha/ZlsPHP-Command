@@ -54,7 +54,7 @@ trait Utils
         }
     }
 
-    private function ansiColorsSupported()
+    final public function ansiColorsSupported()
     {
         return DIRECTORY_SEPARATOR === '\\'
             ? false !== getenv('ANSICON') || 'ON' === getenv('ConEmuANSI')

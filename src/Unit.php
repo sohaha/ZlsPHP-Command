@@ -50,22 +50,46 @@ class Unit extends Command
 
     public function help($args, $command = null)
     {
-        if (Z::arrayGet($args, ['H'])) {
-            foreach ($_SERVER['argv'] as &$v) {
-                if ($v === "-H") {
-                    $v = '--help';
-                    break;
-                }
-            }
-        }
-        $command = Z::arrayGet($args, 0) . ' ' . Z::arrayGet($args, 1);
-        $this->warning("Please use {$command} instead of phpunit.\n");
-        $this->printStr('Usage:', 'yellow');
-        $this->printStrN("  {$command} [options] UnitTest [UnitTest.php]\n");
         $this->run($args);
     }
 
     private function run($args)
+    {
+        if (!class_exists('\PHPUnit\TextUI\Command')) {
+            $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit");
+
+            return;
+        }
+        $argv = Z::arrayGet($GLOBALS, 'argv', []);
+        array_shift($argv);
+        array_shift($argv);
+        if (!Z::arrayGet($args, '--configuration')) {
+            $argv[] = '--configuration';
+            $argv[] = Z::realPath('phpunit.xml', false, false);
+        }
+        // if ($this->ansiColorsSupported()) {
+        if (!Z::arrayGet($args, '--colors')) {
+            $argv[] = '--colors=always';
+        }
+        // }
+        $phpunitPath = $this->getPhpunit();
+        if (!$this->getPhpunit()) {
+            if (class_exists("\PHPUnit\TextUI\Command")) {
+                $this->warning("请安装phpunit.phar获取更好的体验!");
+                $this->phpunit();
+            } else {
+                $this->error("Please install the phpunit.phar!");
+            }
+            $this->success("安装命令");
+
+            return;
+        }
+        $cmd = Z::phpPath() . ' ' . $phpunitPath . " " . join(" ", $argv);
+        $res = Z::command($cmd);
+        echo $res;
+    }
+
+    private function phpunit()
     {
         $options = getopt('', ['prepend:']);
         if (isset($options['prepend'])) {
@@ -73,11 +97,6 @@ class Unit extends Command
             require $options['prepend'];
         }
         unset($options);
-        if (!class_exists('\PHPUnit\TextUI\Command')) {
-            $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit");
-
-            return;
-        }
         if (!isset($GLOBALS['__PHPUNIT_ISOLATION_BLACKLIST'])) {
             $GLOBALS['__PHPUNIT_ISOLATION_BLACKLIST'] = [];
         }
@@ -89,5 +108,29 @@ class Unit extends Command
         unset($_SERVER['argv'][1]);
         $_SERVER['argv'] = array_values($_SERVER['argv']);
         \PHPUnit\TextUI\Command::main();
+    }
+
+    private function getPhpunit()
+    {
+        if (Z::isWin()) {
+            $cmd       = 'echo %PATH%';
+            $delimiter = ":";
+        } else {
+            $cmd       = 'echo $PATH';
+            $delimiter = ":";
+        }
+        $phpunitName = ["/phpunit", "/phpunit.phar", "/phpunit-8.phar"];
+        $paths       = explode($delimiter, Z::command($cmd, null, true, false));
+        $paths[]     = Z::realPath(".", false, false);
+        foreach ($paths as $path) {
+            foreach ($phpunitName as $name) {
+                $phpunitPath = $path . $name;
+                if (is_file($phpunitPath)) {
+                    return $phpunitPath;
+                }
+            }
+        }
+
+        return "";
     }
 }
