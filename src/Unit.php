@@ -55,8 +55,18 @@ class Unit extends Command
 
     private function run($args)
     {
-        if (!class_exists('\PHPUnit\TextUI\Command')) {
-            $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit");
+        if (!class_exists('\Zls\Unit\Templates')) {
+            $this->error("Please install the unit test package!");
+            $this->printStr('Install Command: ');
+            $this->printStrN('composer require --dev zls/unit', 'green', 'white');
+
+            return;
+        }
+        $phpunitxml = Z::realPath('phpunit.xml', false, false);
+        if (!is_file($phpunitxml) || !is_dir(Z::realPath('../tests'))) {
+            $this->error("No 'tests' directory found, please initialize the template");
+            $this->printStr('Init Command: ');
+            $this->printStrN('php zls unitInit', 'green', 'white');
 
             return;
         }
@@ -65,7 +75,7 @@ class Unit extends Command
         array_shift($argv);
         if (!Z::arrayGet($args, '--configuration')) {
             $argv[] = '--configuration';
-            $argv[] = Z::realPath('phpunit.xml', false, false);
+            $argv[] = $phpunitxml;
         }
         // if ($this->ansiColorsSupported()) {
         if (!Z::arrayGet($args, '--colors')) {
