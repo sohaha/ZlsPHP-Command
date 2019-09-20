@@ -10,18 +10,18 @@ use Z;
  */
 trait Utils
 {
-    private $showColor;
+    private $showColor = true;
     private $colors = [];
     private $bgColors = [];
 
     public function __construct()
     {
+        $this->showColor = $this->ansiColorsSupported();
         $this->initColor();
     }
 
     public function initColor()
     {
-        $this->showColor = $this->ansiColorsSupported();
         if ($this->showColor) {
             $this->colors   = [
                 'black'        => '0;30',
@@ -184,9 +184,10 @@ trait Utils
         $originDatabasePath = Z::realPath($originDatabasePath);
         $databasePath       = Z::realPath($databasePath);
         $this->listDir($originDatabasePath, $arr);
-        if(!$arr){
+        if (!$arr) {
             $this->printStr($this->color('[ Skip ]', 'white', 'cyan'));
             $this->printStrN(': file does not exist', 'light_cyan');
+
             return;
         }
         $copy = function ($file, $destFinalPath, $dest) {

@@ -85,18 +85,27 @@ class Unit extends Command
         $phpunitPath = $this->getPhpunit();
         if (!$this->getPhpunit()) {
             if (class_exists("\PHPUnit\TextUI\Command")) {
-                $this->warning("请安装phpunit.phar获取更好的体验!");
-                $this->phpunit();
+                $this->warning("Please install phpunit.phar for a better experience!");
+                $this->holdUp(function () {
+                    $this->phpunit();
+                });
             } else {
                 $this->error("Please install the phpunit.phar!");
             }
-            $this->success("安装命令");
+            $this->printStr('Install Docs: ');
+            $this->printStrN('https://docs.73zls.com/zls-php/#/unit?id=安装', 'green', 'white');
 
             return;
         }
         $cmd = Z::phpPath() . ' ' . $phpunitPath . " " . join(" ", $argv);
-        $res = Z::command($cmd);
-        echo $res;
+        $this->holdUp(function () use ($cmd) {
+            echo Z::command($cmd);
+        });
+    }
+
+    private function holdUp(Callable $fn)
+    {
+        $fn();
     }
 
     private function phpunit()
