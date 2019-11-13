@@ -85,12 +85,12 @@ class Mysql
         $result['args']    = [];
         switch ($type) {
             case 'dao':
-                list($code, $warn, $methods) = $this->$type($columns, $this->table);
+                list($code, $warn, $methods) = $this->$type($columns, $this->table,true);
                 $result['code']    = '    ' . $code . PHP_EOL;
                 $result['methods'] = $methods;
                 break;
             default:
-                $result['code'] = '    ' . $this->$type($columns, $this->table) . PHP_EOL;
+                $result['code'] = '    ' . $this->$type($columns, $this->table,true) . PHP_EOL;
                 foreach ($columns as $column) {
                     $result['methods'][] = 'get' . z::strSnake2Camel($column['name']);
                     $result['methods'][] = 'set' . z::strSnake2Camel($column['name']);
@@ -126,14 +126,14 @@ class Mysql
         return $info;
     }
 
-    private function dao($columns, $table)
+    private function dao($columns, $table,$isAfresh = false)
     {
         /**
          * @var \Zls\Dao\Create
          */
         $DaoCreate = z::extension('Dao\Create');
 
-        return $DaoCreate->dao($columns, $table);
+        return $DaoCreate->dao($columns, $table,$isAfresh);
     }
 
     private function bean($columns)

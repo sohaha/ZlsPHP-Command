@@ -28,6 +28,7 @@ class Main extends Command
         }
         $this->command = array_merge($command, $unitCommand, [
             'start'  => '\Zls\Command\Start',
+            'tasks'  => '\Zls\Command\Tasks',
             'create' => '\Zls\Command\Create',
             'mysql'  => '\Zls\Command\Mysql',
         ]);
