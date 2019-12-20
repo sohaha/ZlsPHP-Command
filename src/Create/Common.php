@@ -189,7 +189,7 @@ class Common
         $obj = z::factory($typename . $classname);
         try {
             $ref     = new \ReflectionClass($obj);
-            $factory = z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->afresh();
+            $factory = z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->afresh(is_file($file));
             if ($factory) {
                 $daoMethods = [];
                 $content    = file($file);

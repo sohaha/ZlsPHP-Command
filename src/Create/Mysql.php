@@ -77,7 +77,7 @@ class Mysql
         return $info;
     }
 
-    public function afresh()
+    public function afresh($being = false)
     {
         $type              = $this->type;
         $columns           = $this->getTableFieldsInfo($this->table, $this->dbGroup);
@@ -85,12 +85,12 @@ class Mysql
         $result['args']    = [];
         switch ($type) {
             case 'dao':
-                list($code, $warn, $methods) = $this->$type($columns, $this->table,true);
+                list($code, $warn, $methods) = $this->$type($columns, $this->table,$being);
                 $result['code']    = '    ' . $code . PHP_EOL;
                 $result['methods'] = $methods;
                 break;
             default:
-                $result['code'] = '    ' . $this->$type($columns, $this->table,true) . PHP_EOL;
+                $result['code'] = '    ' . $this->$type($columns, $this->table,$being) . PHP_EOL;
                 foreach ($columns as $column) {
                     $result['methods'][] = 'get' . z::strSnake2Camel($column['name']);
                     $result['methods'][] = 'set' . z::strSnake2Camel($column['name']);
