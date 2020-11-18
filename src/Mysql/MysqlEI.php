@@ -51,7 +51,7 @@ class MysqlEI
         });
         $this->host = z::arrayGet($master, 'hostname');
         $this->version = $this->db->execute('select VERSION() as version')->value('version');
-        $this->db->pod()->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_NATURAL);
+        $this->db->pdoInstance()->setAttribute(\PDO::ATTR_ORACLE_NULLS, \PDO::NULL_NATURAL);
     }
 
     /**
