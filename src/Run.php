@@ -72,6 +72,7 @@ class Run extends Command
         }
         $path = Z::realPath(ZLS_PATH . '..', true);
         $pharPath = $buildPath . $packageName;
+
         try {
             @unlink($pharPath);
             $phar = new \Phar(
@@ -86,13 +87,13 @@ class Run extends Command
             }
             $phar->compressFiles(\Phar::GZ);
             $phar->stopBuffering();
-            $app = str_replace(Z::realPath(getcwd()), '', Z::realPath(ZLS_APP_PATH));
+            $app = str_replace(Z::realPath("../"), '', Z::realPath(ZLS_APP_PATH));
             $webIndex
                 = "<?php
 Phar::mapPhar('{$packageName}');
 define('ZLS_PHAR_PATH','phar://zls.phar/');
 defined('ZLS_PATH') || define('ZLS_PATH', 'phar://{$packageName}/');
-defined('ZLS_APP_PATH') || define('ZLS_APP_PATH', 'phar://{$packageName}{$app}/');
+defined('ZLS_APP_PATH') || define('ZLS_APP_PATH', 'phar://{$packageName}{$app}');
 defined('ZLS_STORAGE_PATH') || define('ZLS_STORAGE_PATH', getcwd().'/../storage/');
 require 'phar://{$packageName}/public/index.php';
 __HALT_COMPILER();
