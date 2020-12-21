@@ -94,7 +94,7 @@ class Run extends Command
 Phar::mapPhar('{$packageName}');
 define('ZLS_PHAR_PATH','phar://zls.phar/');
 defined('ZLS_PATH') || define('ZLS_PATH', 'phar://{$packageName}/');
-defined('ZLS_APP_PATH') || define('ZLS_APP_PATH', 'phar://{$packageName}{$app}');
+defined('ZLS_APP_PATH') || define('ZLS_APP_PATH', 'phar://{$packageName}{$app}/');
 defined('ZLS_STORAGE_PATH') || define('ZLS_STORAGE_PATH', getcwd().'/../storage/');
 require 'phar://{$packageName}/public/index.php';
 __HALT_COMPILER();
