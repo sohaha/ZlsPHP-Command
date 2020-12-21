@@ -80,7 +80,8 @@ class Run extends Command
                 0,
                 $packageName
             );
-            $exclude = '/^(?!(.*build|.*extract|.*storage|' . str_replace('/', '\/', $path) . 'public))(.*)\.(' . $suffix . ')/i';
+            $d = str_replace('/', '\/', $path);
+            $exclude = '/^(?!(.*build|.*extract|.*storage|' . $d . 'public|' . $d . 'database))(.*)\.(' . $suffix . ')/i';
             $phar->buildFromDirectory($path, $exclude);
             foreach (['public/index.php'] as $v) {
                 $phar->addFile(Z::realPath($path . $v), $v);
@@ -102,7 +103,11 @@ __HALT_COMPILER();
                 $webIndex
             );
             $publicPath = Z::realPathMkdir($buildPath . 'public', true);
+            $databasePath = Z::realPath('database', true, false);
             $this->copyDir(Z::realPath('./'), $publicPath);
+            if (is_dir($databasePath)) {
+                $this->copyDir($databasePath, Z::realPathMkdir($buildPath . 'database', true));
+            }
             $iniFile = Z::realPath('zls.ini.example', false, false);
             if (is_file($iniFile)) {
                 copy($iniFile, $buildPath . 'zls.ini.example');
@@ -119,6 +124,7 @@ defined('ZLS_PATH') || define('ZLS_PATH', __DIR__ . '/');
 defined('ZLS_INDEX_NAME') || define('ZLS_INDEX_NAME', pathinfo(__FILE__, PATHINFO_BASENAME));
 defined('ZLS_STORAGE_PATH') || define('ZLS_STORAGE_PATH', ZLS_PATH. '/../storage/');
 require __DIR__.'/../{$packageName}';");
+            /** @noinspection PhpUndefinedConstantInspection */
             $storage = Z::realPathMkdir(Z::safePath(ZLS_STORAGE_PATH, $buildPath), true);
             file_put_contents($storage . '.gitkeep', '*');
             $this->success('build -> ' . z::realpath($pharPath));
