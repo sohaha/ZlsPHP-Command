@@ -18,6 +18,7 @@ use Zls_Exception_Exit;
 class Common
 {
     use Utils;
+
     const CREATE_MYSQL_CLASS_NAME = 'Zls\Command\Create\Mysql';
     private $hmvc;
 
@@ -40,8 +41,8 @@ class Common
         }
         $this->hmvc = $hmvc;
         /** @var Zls_Config $config */
-        $config         = Z::config();
-        $classesDir     = $config->getPrimaryAppDir() . $config->getClassesDirName() . '/';
+        $config = Z::config();
+        $classesDir = $config->getPrimaryAppDir() . $config->getClassesDirName() . '/';
         $getHmvcModules = $config->getHmvcModules();
         if ($this->hmvc && $HmvcModules = Z::arrayGet($getHmvcModules, $this->hmvc)) {
             $classesDir = $config->getPrimaryAppDir() . $config->getHmvcDirName() . '/' . $HmvcModules . '/' . $config->getClassesDirName() . '/';
@@ -51,37 +52,37 @@ class Common
             case 'controller':
                 // list($name) = $this->nameVerify($name, false, $type);
                 $info = [
-                    'dir'         => $config->getControllerDirName(),
+                    'dir' => $config->getControllerDirName(),
                     'parentClass' => 'Zls_Controller',
-                    'method'      => 'public function ' . Z::config()->getMethodPrefix() . 'index()' . "\n    {\n\n    }",
-                    'nameTip'     => 'Controller',
+                    'method' => 'public function ' . Z::config()->getMethodPrefix() . 'index()' . "\n    {\n\n    }",
+                    'nameTip' => 'Controller',
                 ];
                 break;
             case 'business':
                 list($name) = $this->nameVerify($name, false, $type);
                 $info = [
-                    'dir'         => $config->getBusinessDirName(),
+                    'dir' => $config->getBusinessDirName(),
                     'parentClass' => 'Zls_Business',
-                    'method'      => "public function business()\n    {\n\n    }",
-                    'nameTip'     => 'Business',
+                    'method' => "public function business()\n    {\n\n    }",
+                    'nameTip' => 'Business',
                 ];
                 break;
             case 'model':
                 list($name) = $this->nameVerify($name, false, $type);
                 $info = [
-                    'dir'         => $config->getModelDirName(),
+                    'dir' => $config->getModelDirName(),
                     'parentClass' => 'Zls_Model',
-                    'method'      => "public function model()\n    {\n\n    }",
-                    'nameTip'     => 'Model',
+                    'method' => "public function model()\n    {\n\n    }",
+                    'nameTip' => 'Model',
                 ];
                 break;
             case 'task':
                 list($name) = $this->nameVerify($name, false, $type);
                 $info = [
-                    'dir'         => $config->getTaskDirName(),
+                    'dir' => $config->getTaskDirName(),
                     'parentClass' => 'Zls_Task',
-                    'method'      => "public function execute(\$args)\n    {\n\n    }",
-                    'nameTip'     => 'Task',
+                    'method' => "public function execute(\$args)\n    {\n\n    }",
+                    'nameTip' => 'Task',
                 ];
                 break;
             case 'dao':
@@ -92,20 +93,20 @@ class Common
                     $this->warning($warn);
                 }
                 $info = [
-                    'dir'         => $config->getDaoDirName(),
+                    'dir' => $config->getDaoDirName(),
                     'parentClass' => 'Zls_Dao',
-                    'method'      => $method,
-                    'nameTip'     => 'Dao',
+                    'method' => $method,
+                    'nameTip' => 'Dao',
                 ];
                 break;
             case 'bean':
                 //$afresh = true;
                 list($name, $table) = $this->nameVerify($name, $table, $type);
                 $info = [
-                    'dir'         => $config->getBeanDirName(),
+                    'dir' => $config->getBeanDirName(),
                     'parentClass' => 'Zls_Bean',
-                    'method'      => z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->creation($type, $table, $dbGroup),
-                    'nameTip'     => 'Bean',
+                    'method' => z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->creation($type, $table, $dbGroup),
+                    'nameTip' => 'Bean',
                 ];
                 break;
             case 'unit':
@@ -113,11 +114,11 @@ class Common
                     $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit", '', true);
                 }
                 $info = [
-                    'dir'         => 'tests\Unit',
+                    'dir' => 'tests\Unit',
                     'parentClass' => 'PHPUnit\Framework\TestCase',
-                    'method'      => (new Templates())->unit(),
-                    'nameTip'     => 'Unit',
-                    'noClass'     => true,
+                    'method' => (new Templates())->unit(),
+                    'nameTip' => 'Unit',
+                    'noClass' => true,
                 ];
                 break;
             default:
@@ -127,7 +128,7 @@ class Common
         $classname = implode('/', Z::arrayMap(explode('/', $classname), function ($v) {
             return ucfirst($v);
         }));
-        $typename  = $info['dir'];
+        $typename = $info['dir'];
         if (Z::arrayKeyExists('noClass', $info)) {
             $file = $classname;
             $file = Z::realPath($info['dir'] . '/' . $file, true, false) . (Z::strEndsWith($file, 'Test') ? $file : $file . 'Test') . '.php';
@@ -135,9 +136,9 @@ class Common
             $file = $classesDir . str_replace('_', '/', $typename . '_' . $classname) . '.php';
             $file = Z::realPath($file);
         }
-        $method      = $info['method'];
+        $method = $info['method'];
         $parentClass = $info['parentClass'];
-        $tip         = $info['nameTip'];
+        $tip = $info['nameTip'];
         if (file_exists($file)) {
             if ($afresh) {
                 $this->afreshFile($file, $typename, $classname, $tip, $type, $table, $dbGroup);
@@ -162,10 +163,10 @@ class Common
 
             return $table;
         };
-        $suffix   = ucfirst($suffix);
+        $suffix = ucfirst($suffix);
         if (!Z::strEndsWith($name, $suffix)) {
             $table = $getTable($name, $table);
-            $name  = $name . $suffix;
+            $name = $name . $suffix;
         } else {
             $table = $getTable(substr($name, 0, strlen($name) - strlen($suffix)), $table);
         }
@@ -183,27 +184,28 @@ class Common
      */
     private function afreshFile($file, $typename, $classname, $tip, $type, $table, $dbGroup)
     {
-        $content  = '';
+        $content = '';
         $typename = ($this->hmvc ? 'Hmvc_' . $typename : '' . $typename) . '_';
         z::includeOnce($file);
         $obj = z::factory($typename . $classname);
         try {
-            $ref     = new \ReflectionClass($obj);
+            $ref = new \ReflectionClass($obj);
             $factory = z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->afresh(is_file($file));
             if ($factory) {
                 $daoMethods = [];
-                $content    = file($file);
-                $place      = 0;
-                $methods    = $factory['methods'];
-                foreach ($factory['methods'] as $v) {
+                $content = file($file);
+                $place = 0;
+                $methods = $factory['methods'];
+                $start = 0;
+                foreach ($factory['methods'] as $i => $v) {
                     try {
                         if ($method = $ref->getMethod($v)) {
                             if (Z::realPath($file) === Z::realPath($method->getFileName())) {
                                 $start = $method->getStartLine() - 1;
-                                $end   = $method->getEndLine() - 1;
+                                $end = $method->getEndLine() - 1;
                                 do {
                                     if (!$place) {
-                                        $place           = true;
+                                        $place = true;
                                         $content[$start] = $factory['code'];
                                     } else {
                                         unset($content[$start]);
@@ -215,12 +217,16 @@ class Common
                     } catch (\ReflectionException $e) {
                         $this->error($e->getMessage());
                     }
+                    if (count($factory['methods']) > ($i + 1)) {
+                        if (!trim($content[$start]))
+                            unset($content[$start]);
+                    }
                 }
                 if (!$place) {
-                    $endLine  = $ref->getEndLine() - 1;
+                    $endLine = $ref->getEndLine() - 1;
                     $_content = trim(z::arrayGet($content, $endLine));
                     if (!$_content) {
-                        $endLine  = $endLine - 1;
+                        $endLine = $endLine - 1;
                         $_content = trim(z::arrayGet($content, $endLine));
                     }
                     $content[$endLine] = $factory['code'] . \PHP_EOL . $_content;
@@ -259,10 +265,10 @@ class Common
 
     private function PSR4($typename, $classname, $parentClass, $method)
     {
-        $classname    = str_replace('\\', '/', $classname);
-        $classname    = str_replace('_', '/', $classname);
+        $classname = str_replace('\\', '/', $classname);
+        $classname = str_replace('_', '/', $classname);
         $classnameArg = explode('/', $classname);
-        $classname    = array_pop($classnameArg);
+        $classname = array_pop($classnameArg);
         $classnameArg = implode('\\', $classnameArg);
         if ($classnameArg) {
             $typename = $typename . '\\' . $classnameArg;

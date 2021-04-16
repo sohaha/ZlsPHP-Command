@@ -76,7 +76,7 @@ class Create extends Command
             $name = Z::strSnake2Camel($name);
         }
 
-        return ['name' => $name, 'type' => $type, 'table' => $table, 'hmvc' => $hmvc, 'db' => $dbGroup, 'force' => $force, 'style' => $style];
+        return ['name' => $name, 'type' => $type, 'table' => $table, 'hmvc' => $hmvc, 'dbGroup' => $dbGroup, 'force' => $force, 'style' => $style];
     }
 
     public function __call($name, $args)

@@ -14,6 +14,7 @@ use Zls\Command\Utils;
 class Mysql
 {
     use Utils;
+
     private $type;
     private $table;
     private $dbGroup;
@@ -24,10 +25,10 @@ class Mysql
             $this->error('table name required, please use --table TableName');
             Z::finish();
         } else {
-            $this->type    = $type;
-            $this->table   = $table;
+            $this->type = $type;
+            $this->table = $table;
             $this->dbGroup = $dbGroup;
-            $columns       = $this->getTableFieldsInfo($table, $dbGroup);
+            $columns = $this->getTableFieldsInfo($table, $dbGroup);
 
             return $this->$type($columns, $table);
         }
@@ -51,20 +52,20 @@ class Mysql
     }
 
     /**
-     * @param string                     $tableName
+     * @param string $tableName
      * @param \Zls_Database_ActiveRecord $db
      * @return array
      */
     public function sqlsrv($tableName, $db)
     {
-        $info    = [];
-        $result  = $db->execute('SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\'' . $db->getTablePrefix() . $tableName . '\'')->rows();
+        $info = [];
+        $result = $db->execute('SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=\'' . $db->getTablePrefix() . $tableName . '\'')->rows();
         $primary = $db->execute('EXEC sp_pkeys @table_name=\'' . $db->getTablePrefix() . $tableName . '\'')->value('COLUMN_NAME');
         if ($result) {
             foreach ($result as $val) {
                 $info[$val['COLUMN_NAME']] = [
-                    'name'    => $val['COLUMN_NAME'],
-                    'type'    => $val['DATA_TYPE'],
+                    'name' => $val['COLUMN_NAME'],
+                    'type' => $val['DATA_TYPE'],
                     'comment' => $val['COLUMN_NAME'], //注释
                     'notnull' => 'NO' == $val['IS_NULLABLE'] ? 1 : 0,
                     'default' => $val['COLUMN_DEFAULT'],
@@ -79,18 +80,18 @@ class Mysql
 
     public function afresh($being = false)
     {
-        $type              = $this->type;
-        $columns           = $this->getTableFieldsInfo($this->table, $this->dbGroup);
+        $type = $this->type;
+        $columns = $this->getTableFieldsInfo($this->table, $this->dbGroup);
         $result['methods'] = [];
-        $result['args']    = [];
+        $result['args'] = [];
         switch ($type) {
             case 'dao':
-                list($code, $warn, $methods) = $this->$type($columns, $this->table,$being);
-                $result['code']    = '    ' . $code . PHP_EOL;
+                list($code, $warn, $methods) = $this->$type($columns, $this->table, $being);
+                $result['code'] = '    ' . $code;
                 $result['methods'] = $methods;
                 break;
             default:
-                $result['code'] = '    ' . $this->$type($columns, $this->table,$being) . PHP_EOL;
+                $result['code'] = '    ' . $this->$type($columns, $this->table, $being) . PHP_EOL;
                 foreach ($columns as $column) {
                     $result['methods'][] = 'get' . z::strSnake2Camel($column['name']);
                     $result['methods'][] = 'set' . z::strSnake2Camel($column['name']);
@@ -101,19 +102,19 @@ class Mysql
     }
 
     /**
-     * @param string                     $tableName
+     * @param string $tableName
      * @param \Zls_Database_ActiveRecord $db
      * @return array
      */
     private function mysql($tableName, $db)
     {
-        $info   = [];
+        $info = [];
         $result = $db->execute('SHOW FULL COLUMNS FROM ' . $db->getTablePrefix() . $tableName)->rows();
         if ($result) {
             foreach ($result as $val) {
                 $info[$val['Field']] = [
-                    'name'    => $val['Field'],
-                    'type'    => $val['Type'],
+                    'name' => $val['Field'],
+                    'type' => $val['Type'],
                     'comment' => $val['Comment'] ? $val['Comment'] : $val['Field'],
                     'notnull' => 'NO' == $val['Null'] ? 1 : 0,
                     'default' => $val['Default'],
@@ -126,14 +127,14 @@ class Mysql
         return $info;
     }
 
-    private function dao($columns, $table,$isAfresh = false)
+    private function dao($columns, $table, $isAfresh = false)
     {
         /**
          * @var \Zls\Dao\Create
          */
         $DaoCreate = z::extension('Dao\Create');
 
-        return $DaoCreate->dao($columns, $table,$isAfresh);
+        return $DaoCreate->dao($columns, $table, $isAfresh);
     }
 
     private function bean($columns)
