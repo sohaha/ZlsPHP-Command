@@ -5,13 +5,7 @@ namespace Zls\Command;
 use Z;
 
 /**
- * 本地服务器.
- * @author        影浅
- * @email         seekwe@gmail.com
- * @copyright     Copyright (c) 2015 - 2017, 影浅, Inc.
- * @see           ---
- * @since         v0.0.1
- * @updatetime    2018-02-01 15:01
+ * 本地服务器
  */
 class Start extends Command
 {
@@ -90,7 +84,8 @@ class Start extends Command
         if (is_null($socket)) {
             $this->warning('If you need to check the port occupancy, Please Remove the [stream_socket_server] limit.');
         } elseif (!$socket) {
-            @fclose($socket);
+            if (!is_bool($socket))
+                @fclose($socket);
             ++$port;
 
             return $this->checkPortBindable($host, $port);
