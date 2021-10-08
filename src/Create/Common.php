@@ -6,14 +6,13 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 use Z;
 use Zls\Command\Main;
 use Zls\Command\Utils;
+use Zls\Command\Create as CreateCommand;
 use Zls\Unit\Templates;
 use Zls_Config;
 use Zls_Exception_Exit;
 
 /**
  * Class Common
- * @package       Zls\Command\Create
- * @author        影浅 <seekwe@gmail.com>
  */
 class Common
 {
@@ -48,82 +47,81 @@ class Common
             $classesDir = $config->getPrimaryAppDir() . $config->getHmvcDirName() . '/' . $HmvcModules . '/' . $config->getClassesDirName() . '/';
         }
         $info = [];
-        switch ($type) {
-            case 'controller':
-                // list($name) = $this->nameVerify($name, false, $type);
-                $info = [
-                    'dir' => $config->getControllerDirName(),
-                    'parentClass' => 'Zls_Controller',
-                    'method' => 'public function ' . Z::config()->getMethodPrefix() . 'index()' . "\n    {\n\n    }",
-                    'nameTip' => 'Controller',
-                ];
-                break;
-            case 'business':
-                list($name) = $this->nameVerify($name, false, $type);
-                $info = [
-                    'dir' => $config->getBusinessDirName(),
-                    'parentClass' => 'Zls_Business',
-                    'method' => "public function business()\n    {\n\n    }",
-                    'nameTip' => 'Business',
-                ];
-                break;
-            case 'model':
-                list($name) = $this->nameVerify($name, false, $type);
-                $info = [
-                    'dir' => $config->getModelDirName(),
-                    'parentClass' => 'Zls_Model',
-                    'method' => "public function model()\n    {\n\n    }",
-                    'nameTip' => 'Model',
-                ];
-                break;
-            case 'task':
-                list($name) = $this->nameVerify($name, false, $type);
-                $info = [
-                    'dir' => $config->getTaskDirName(),
-                    'parentClass' => 'Zls_Task',
-                    'method' => "public function execute(\$args)\n    {\n\n    }",
-                    'nameTip' => 'Task',
-                ];
-                break;
-            case 'dao':
-                list($name, $table) = $this->nameVerify($name, $table, $type);
-                $afresh = true;
-                list($method, $warn) = z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->creation($type, $table, $dbGroup);
-                if ($warn) {
-                    $this->warning($warn);
-                }
-                $info = [
-                    'dir' => $config->getDaoDirName(),
-                    'parentClass' => 'Zls_Dao',
-                    'method' => $method,
-                    'nameTip' => 'Dao',
-                ];
-                break;
-            case 'bean':
-                //$afresh = true;
-                list($name, $table) = $this->nameVerify($name, $table, $type);
-                $info = [
-                    'dir' => $config->getBeanDirName(),
-                    'parentClass' => 'Zls_Bean',
-                    'method' => z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->creation($type, $table, $dbGroup),
-                    'nameTip' => 'Bean',
-                ];
-                break;
-            case 'unit':
-                if (!Z::arrayGet((new Main())->getBuiltInCommand(), 'unitInit')) {
-                    $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit", '', true);
-                }
-                $info = [
-                    'dir' => 'tests\Unit',
-                    'parentClass' => 'PHPUnit\Framework\TestCase',
-                    'method' => (new Templates())->unit(),
-                    'nameTip' => 'Unit',
-                    'noClass' => true,
-                ];
-                break;
-            default:
-                Z::end("Unknown type : {$type}\n Please use : -type [controller,business,model,task,dao,bean]");
+        $handle = new Handle();
+        if (method_exists($handle, $type)) {
+            $info = $handle->$type();
+        } else {
+            // todo temporarily compatible
+            switch ($type) {
+                case 'business':
+                    list($name) = $this->nameVerify($name, false, $type);
+                    $info = [
+                        'dir' => $config->getBusinessDirName(),
+                        'parentClass' => 'Zls_Business',
+                        'method' => "public function business()\n    {\n\n    }",
+                        'nameTip' => 'Business',
+                    ];
+                    break;
+                case 'model':
+                    list($name) = $this->nameVerify($name, false, $type);
+                    $info = [
+                        'dir' => $config->getModelDirName(),
+                        'parentClass' => 'Zls_Model',
+                        'method' => "public function model()\n    {\n\n    }",
+                        'nameTip' => 'Model',
+                    ];
+                    break;
+                case 'task':
+                    list($name) = $this->nameVerify($name, false, $type);
+                    $info = [
+                        'dir' => $config->getTaskDirName(),
+                        'parentClass' => 'Zls_Task',
+                        'method' => "public function execute(\$args)\n    {\n\n    }",
+                        'nameTip' => 'Task',
+                    ];
+                    break;
+                case 'dao':
+                    list($name, $table) = $this->nameVerify($name, $table, $type);
+                    $afresh = true;
+                    list($method, $warn) = z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->creation($type, $table, $dbGroup);
+                    if ($warn) {
+                        $this->warning($warn);
+                    }
+                    $info = [
+                        'dir' => $config->getDaoDirName(),
+                        'parentClass' => 'Zls_Dao',
+                        'method' => $method,
+                        'nameTip' => 'Dao',
+                    ];
+                    break;
+                case 'bean':
+                    //$afresh = true;
+                    list($name, $table) = $this->nameVerify($name, $table, $type);
+                    $info = [
+                        'dir' => $config->getBeanDirName(),
+                        'parentClass' => 'Zls_Bean',
+                        'method' => z::factory(self::CREATE_MYSQL_CLASS_NAME, true)->creation($type, $table, $dbGroup),
+                        'nameTip' => 'Bean',
+                    ];
+                    break;
+                case 'unit':
+                    if (!Z::arrayGet((new Main())->getBuiltInCommand(), 'unitInit')) {
+                        $this->error("Please install the unit test package!\nInstall Command: composer require --dev zls/unit", '', true);
+                    }
+                    $info = [
+                        'dir' => 'tests\Unit',
+                        'parentClass' => 'PHPUnit\Framework\TestCase',
+                        'method' => (new Templates())->unit(),
+                        'nameTip' => 'Unit',
+                        'noClass' => true,
+                    ];
+                    break;
+                default:
+                    $types = join(', ', CreateCommand::TYPES);
+                    Z::end("Unknown type : {$type}\n Please use : -type [{$types}]");
+            }
         }
+
         $classname = str_replace(['_', '\\'], '/', $name);
         $classname = implode('/', Z::arrayMap(explode('/', $classname), function ($v) {
             return ucfirst($v);

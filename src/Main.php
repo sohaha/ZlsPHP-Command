@@ -17,7 +17,7 @@ class Main extends Command
     public function __construct()
     {
         parent::__construct();
-        $command     = [
+        $command = [
             //'set'    => '\Zls\Command\Set',
             //'update' => '\Zls\Command\Update',
             'run' => '\Zls\Command\Run',
@@ -27,10 +27,10 @@ class Main extends Command
             $unitCommand['unitInit'] = '\Zls\Command\UnitInit';
         }
         $this->command = array_merge($command, $unitCommand, [
-            'start'  => '\Zls\Command\Start',
-            'tasks'  => '\Zls\Command\Tasks',
+            'start' => '\Zls\Command\Start',
+            'tasks' => '\Zls\Command\Tasks',
             'create' => '\Zls\Command\Create',
-            'mysql'  => '\Zls\Command\Mysql',
+            'mysql' => '\Zls\Command\Mysql',
         ]);
     }
 
@@ -125,24 +125,33 @@ class Main extends Command
 
     private function getInfo($commands)
     {
-        $lists  = [];
+        $lists = [];
         $maxLen = 10;
+        $errs = [];
         foreach ($commands as $key => $value) {
-            /** @var Command $command */
-            $command     = Z::factory($value);
-            $lists[$key] = $command->description();
-            $len         = strlen($key);
-            if ($len > $maxLen) {
-                $maxLen = $len;
+            try {
+                /** @var Command $command */
+                $command = Z::factory($value);
+                $lists[$key] = $command->description();
+                $len = strlen($key);
+                if ($len > $maxLen) {
+                    $maxLen = $len;
+                }
+            } catch (\Zls_Exception_500 $e) {
+                $errs[] = $e->getErrorMessage();
             }
         }
         foreach ($lists as $key => $list) {
             $this->printStrN(
                 '  ' .
-                $this->color(str_pad($key, $maxLen), 'green') .
+                $this->color(str_pad(lcfirst($key), $maxLen), 'green') .
                 '   ' .
                 $list
             );
+        }
+        foreach ($errs as $err) {
+            $this->printStrN();
+            $this->warning($err);
         }
     }
 
@@ -152,7 +161,7 @@ class Main extends Command
         foreach ($files as $k => $v) {
             if ('file' === $k) {
                 foreach ($v as $name) {
-                    $name                  = str_replace('.'
+                    $name = str_replace('.'
                         . strtolower(pathinfo($name, PATHINFO_EXTENSION)), '',
                         $name);
                     $list[$prefix . $name] = '\\Command\\' . $prefix . $name;
