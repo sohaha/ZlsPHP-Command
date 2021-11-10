@@ -5,12 +5,6 @@ namespace Zls\Command\Create;
 use Z;
 use Zls\Command\Utils;
 
-/**
- * Zls_Command_Create_Mysql.
- * @author        影浅-Seekwe
- * @email         seekwe@gmail.com
- * @updatetime    2017-5-31 12:11:36
- */
 class Mysql
 {
     use Utils;
@@ -23,7 +17,7 @@ class Mysql
     {
         if (empty($table) || !is_string($table)) {
             $this->error('table name required, please use --table TableName');
-            Z::finish();
+            exit(5);
         } else {
             $this->type = $type;
             $this->table = $table;
@@ -93,8 +87,8 @@ class Mysql
             default:
                 $result['code'] = '    ' . $this->$type($columns, $this->table, $being) . PHP_EOL;
                 foreach ($columns as $column) {
-                    $result['methods'][] = 'get' . z::strSnake2Camel($column['name']);
-                    $result['methods'][] = 'set' . z::strSnake2Camel($column['name']);
+                    $result['methods'][] = 'get' . Z::strSnake2Camel($column['name']);
+                    $result['methods'][] = 'set' . Z::strSnake2Camel($column['name']);
                 }
         }
 
@@ -129,10 +123,8 @@ class Mysql
 
     private function dao($columns, $table, $isAfresh = false)
     {
-        /**
-         * @var \Zls\Dao\Create
-         */
-        $DaoCreate = z::extension('Dao\Create');
+        /** @var \Zls\Dao\Create $DaoCreate */
+        $DaoCreate = Z::extension('Dao\Create');
 
         return $DaoCreate->dao($columns, $table, $isAfresh);
     }
@@ -142,8 +134,7 @@ class Mysql
         /**
          * @var \Zls\Dao\Create
          */
-        $DaoCreate = z::extension('Dao\Create');
-
+        $DaoCreate = Z::extension('Dao\Create');
         return $DaoCreate->bean($columns);
     }
 }

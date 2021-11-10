@@ -5,10 +5,7 @@ namespace Zls\Command;
 use Z;
 
 /**
- * Command.
- * @author        影浅-Seekwe
- * @email         seekwe@gmail.com
- * @updatetime    2018-7-22 13:37:09
+ * Command
  */
 abstract class Command
 {
@@ -16,8 +13,7 @@ abstract class Command
 
     public function help($args, $command = null)
     {
-        $command = $command
-            ?: Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
+        $command = $command ?: Z::arrayGet(explode(':', Z::arrayGet($args, 1)), 0);
         $options = static::options();
         $handles = static::commands();
         if (true === $handles) {
