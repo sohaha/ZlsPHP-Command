@@ -73,7 +73,7 @@ class Main extends Command
             . '    Show command help');
         $this->printStrN('  ' . $this->color('-C, --color', 'green')
             . '   Show Color name');
-        $files = Z::scanFile(ZLS_APP_PATH . 'classes/Command', 99,
+        $files = self::scanFile(ZLS_APP_PATH . 'classes/Command', 99,
             function ($dir, $name) {
                 if (is_dir($dir . '/' . $name)) {
                     return true;
@@ -172,5 +172,25 @@ class Main extends Command
                 }
             }
         }
+    }
+
+    public static function scanFile($dir, $depth = 0, $fn = null)
+    {
+        $dirs = ['folder' => [], 'file' => []];
+        if (is_dir($dir)) {
+            if ($dh = opendir($dir)) {
+                while (false !== ($file = readdir($dh))) {
+                    if ($depth >= 0 && '.' != $file && '..' != $file && !(is_callable($fn) && (false === $fn($dir, $file)))) {
+                        if ((is_dir($dir . '/' . $file))) {
+                            $dirs['folder'][$file] = self::scanFile($dir . '/' . $file . '/', $depth - 1);
+                        } else {
+                            $dirs['file'][] = $file;
+                        }
+                    }
+                }
+                closedir($dh);
+            }
+        }
+        return $dirs;
     }
 }

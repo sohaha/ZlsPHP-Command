@@ -50,6 +50,9 @@ class Common
         $handle = new Handle();
         if (method_exists($handle, $type)) {
             $info = $handle->$type();
+            if(Z::arrayGet($info,'suffix')){
+                list($name) = $this->nameVerify($name, false, $type);
+            }
         } else {
             // todo temporarily compatible
             switch ($type) {

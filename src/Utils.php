@@ -23,32 +23,32 @@ trait Utils
     public function initColor()
     {
         if ($this->showColor) {
-            $this->colors = [
-                'black' => '0;30',
-                'dark_gray' => '1;30',
-                'blue' => '0;34',
-                'light_blue' => '1;34',
-                'green' => '0;32',
-                'light_green' => '1;32',
-                'cyan' => '0;36',
-                'light_cyan' => '1;36',
-                'red' => '0;31',
-                'light_red' => '1;31',
-                'purple' => '0;35',
+            $this->colors   = [
+                'black'        => '0;30',
+                'dark_gray'    => '1;30',
+                'blue'         => '0;34',
+                'light_blue'   => '1;34',
+                'green'        => '0;32',
+                'light_green'  => '1;32',
+                'cyan'         => '0;36',
+                'light_cyan'   => '1;36',
+                'red'          => '0;31',
+                'light_red'    => '1;31',
+                'purple'       => '0;35',
                 'light_purple' => '1;35',
-                'brown' => '0;33',
-                'yellow' => '1;33',
-                'light_gray' => '0;37',
-                'white' => '1;37',
+                'brown'        => '0;33',
+                'yellow'       => '1;33',
+                'light_gray'   => '0;37',
+                'white'        => '1;37',
             ];
             $this->bgColors = [
-                'black' => '40',
-                'red' => '41',
-                'green' => '42',
-                'yellow' => '43',
-                'blue' => '44',
-                'magenta' => '45',
-                'cyan' => '46',
+                'black'      => '40',
+                'red'        => '41',
+                'green'      => '42',
+                'yellow'     => '43',
+                'blue'       => '44',
+                'magenta'    => '45',
+                'cyan'       => '46',
                 'light_gray' => '47',
             ];
         }
@@ -110,7 +110,7 @@ trait Utils
         }
         $this->printStr('[ Error ]', 'white', 'red');
         $this->printStrN(': ' . $err, $color);
-        $end && exit(5);
+        $end && Z::end();
     }
 
     final public function success($msg, $color = 'green')
@@ -133,7 +133,7 @@ trait Utils
             fwrite(STDOUT, $question);
             $value = trim(fgets(STDIN));
             if (!is_null($default) && ('' === $value || '0' === $value)) {
-                $value = $default;
+                $value  = $default;
                 $status = true;
             } elseif ($value || !$canNull) {
                 $status = true;
@@ -150,7 +150,7 @@ trait Utils
 
     final public function progress($i, $title = 'mprogress: ', $mprogressColor = '', $bgColor = '', $pad = ' ')
     {
-        $bgColor = $bgColor ? "\033[" . z::arrayGet($this->bgColors, $bgColor, 'white') . 'm' : '';
+        $bgColor        = $bgColor ? "\033[" . z::arrayGet($this->bgColors, $bgColor, 'white') . 'm' : '';
         $mprogressColor = $mprogressColor ? "\033[" . z::arrayGet($this->colors, $mprogressColor, 'white') . 'm' : '';
         printf("{$title}{$bgColor}{$mprogressColor} %d%% %s\r\033[0m", $i, str_repeat($pad, $i));
     }
@@ -158,8 +158,8 @@ trait Utils
     final public function copyFile($originFile, $file, $force = false, \Closure $cb = null, $tip = 'copy config: ')
     {
         $originFile = Z::realPath($originFile, false, false);
-        $file = Z::realPath($file, false, false);
-        $status = false;
+        $file       = Z::realPath($file, false, false);
+        $status     = false;
         if (!file_exists($file) || $force) {
             if ($tip) {
                 $this->printStrN("{$tip}{$originFile} -> {$file}");
@@ -174,15 +174,15 @@ trait Utils
     /**
      * 目录复制
      *
-     * @param string $originDatabasePath
-     * @param string $databasePath
+     * @param string  $originDatabasePath
+     * @param string  $databasePath
      * @param boolean $allForce 是否全部覆盖
-     * @param null $destPathProcess
+     * @param null    $destPathProcess
      */
     final public function batchCopy($originDatabasePath, $databasePath, $allForce = false, $destPathProcess = null)
     {
         $originDatabasePath = Z::realPath($originDatabasePath);
-        $databasePath = Z::realPath($databasePath);
+        $databasePath       = Z::realPath($databasePath);
         $this->listDir($originDatabasePath, $arr);
         if (!$arr) {
             $this->printStr($this->color('[ Skip ]', 'white', 'cyan'));
@@ -212,11 +212,11 @@ trait Utils
                     } elseif ($allForce) {
                         $copy($file, $destFinalPath, $destPath);
                     } else {
-                        $pad = str_repeat(' ', 12);
+                        $pad    = str_repeat(' ', 12);
                         $notice = $this->color('[ Notify ]', 'white', 'blue');
-                        $msg = $notice . ': File exists ' . Z::safePath($destFinalPath) . "\n{$pad}" . $this->color('Whether to overwrite the current file [y,N] ', 'cyan');
-                        $value = $this->ask($msg, 'n');
-                        $value = strtoupper(trim($value));
+                        $msg    = $notice . ': File exists ' . Z::safePath($destFinalPath) . "\n{$pad}" . $this->color('Whether to overwrite the current file [y,N] ', 'cyan');
+                        $value  = $this->ask($msg, 'n');
+                        $value  = strtoupper(trim($value));
                         if ($value === 'Y' || $value === 'YES') {
                             $copy($file, $destFinalPath, $destPath);
                         } else {

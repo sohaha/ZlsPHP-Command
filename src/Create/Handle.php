@@ -49,6 +49,7 @@ class Handle
             'parentClass' => 'Zls\Command\Command',
             'method' => $method,
             'nameTip' => 'Command',
+            'suffix' => true,
         ];
     }
 
